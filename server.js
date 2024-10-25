@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const sendUserEmail = require("./sendEmail");
 const cors = require("cors");
 const morgan = require("morgan");
+const userRouter = require("./routes/userRoute")
 
 
 const projectPlatform = express();
@@ -23,4 +24,10 @@ connectToDatabase();
 
 projectPlatform.listen(PORT, () => {
     console.log(`Server is running on ${PORT}`);
+});
+
+projectPlatform.use("/api", userRouter);
+
+projectPlatform.use((req, res) => {
+    return res.status(404).json({ message: "This endpoint does not exist yet" });
 });

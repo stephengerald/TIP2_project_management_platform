@@ -8,6 +8,7 @@ const nodemailer = require("nodemailer");
 const pdfkit = require("pdfkit");
 const fs = require('fs');
 
+/*
 const issueCertificate = async (req, res) => {
     try {
         const { id } = req.params;
@@ -65,6 +66,7 @@ const issueCertificate = async (req, res) => {
          return res.status(400).json({ message: error.message });
         }
   };
+  */
 
 const loginFn = async (req, res) => {
     try {
@@ -185,7 +187,7 @@ const updateUser = async (req, res) => {
 
 const welcome = async(req, res) => {
     try {
-        return res.status(200).json({ message: "Welcome to FoodCorner!" });
+        return res.status(200).json({ message: "Welcome to project management platform!" });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -227,5 +229,5 @@ module.exports = {
     updateUser,
     welcome,
     deletedUser,
-    issueCertificate
+    /*issueCertificate*/
 }
