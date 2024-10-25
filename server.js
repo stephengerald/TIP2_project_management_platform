@@ -1,5 +1,5 @@
 const express = require("express");
-const connectToDatabase = require("./dataBase")
+const connectToDatabase = require("./configuration/DB")
 const Users = require("./models/userModel");
 const dotenv = require("dotenv").config();
 const bcryptjs = require("bcryptjs");

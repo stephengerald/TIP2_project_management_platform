@@ -1,11 +1,11 @@
 {
   "name": "project_management_platform",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "author": "Stephen Gerald Okpala, Onyeizugbo Stanley Ifeanyi, Kenneth Onyeonoro",
   "license": "ISC",
