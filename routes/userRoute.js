@@ -1,5 +1,5 @@
 const express = require("express");
-const { loginFn, registerFn, singleUser, allUser, updateUser, welcome, deletedUser, /*issueCertificate*/ } = require("../controllers/userCtrl");
+const { loginFn, logout, registerFn, singleUser, allUser, updateUser, welcome, deletedUser, /*issueCertificate*/ } = require("../controllers/userCtrl");
 const { validateLogin, validateRegistration } = require("../middleware/validations");
 const validateToken = require("../middleware/validateAuth");
 
@@ -10,6 +10,8 @@ router.get("/", welcome);
 // login router
 router.post("/login", validateLogin, loginFn);
 
+//logout route
+router.post("/logout", logout)
 //user registration router
 router.post("/register", validateRegistration, registerFn);
 
