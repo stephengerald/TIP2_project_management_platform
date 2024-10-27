@@ -83,13 +83,29 @@ const loginFn = async (req, res) => {
         if (!isMatched) {
             return res.status(400).json({ message: "Access Denied!" })
         }
+        
+        //GENERATE COOKIE ACCESS AND SEND TO THE USER USING JSONWEBTOKEN
+        // when user logout the this accesss token is been refreshed and clears the user out
+
+
+const accessToken = jwt.sign({
+  id: user._id,
+  email: user.email,
+  role: user.role
+}, process.env.ACCESS_TOKEN,{expiresIn: "5d"})
+
+res.cookie("accessToken", accessToken, {
+  httpOnly: true, 
+  //secure: true //this should be set true during deployment
+  
+}) 
 
         // Generating Tokens
-        // Access Token
+        // Access Token // PLEASE SIR CAN YOU EXPLAIN WHAT THIS TWO LINEs OF CODES HELP US TO ACHIEVE
 
-        const accessToken = jwt.sign({ user }, `${process.env.ACCESS_TOKEN}`, { expiresIn: "5m" });
+        //const accessToken = jwt.sign({ user }, `${process.env.ACCESS_TOKEN}`, { expiresIn: "5m" });
 
-        const refreshToken = jwt.sign({ user }, `${process.env.REFRESH_TOKEN}`, { expiresIn: "5m" })
+        //const refreshToken = jwt.sign({ user }, `${process.env.REFRESH_TOKEN}`, { expiresIn: "5m" })
 
         await sendUserEmail(email);
 
@@ -103,6 +119,20 @@ const loginFn = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+
+// I have added logout api here(kenneth_devs)
+
+const logout =async(req, res)=>{
+    try{
+  
+      res.clearCookie("passToken")
+    res.status(200).json({message: "Logout Successful"})
+    } catch (error) {
+      return res.status(500).json({message: "can't Logout!"})
+    }
+   
+  } 
+  
 
 const registerFn = async (req, res) => {
     try {
@@ -223,6 +253,7 @@ const deletedUser = async (req, res) => {
 
 module.exports = {
     loginFn,
+    logout,
     registerFn,
     singleUser,
     allUser,
