@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs")
-const Project = require("../models/projectModel")
+const Project = require("../models/project")
 
 
 
