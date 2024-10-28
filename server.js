@@ -2,7 +2,7 @@ const express = require("express");
 const connectToDatabase = require("./configuration/DB")
 const Users = require("./models/userModel");
 const dotenv = require("dotenv").config();
-const bcryptjs = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendUserEmail = require("./sendEmail");
 const cors = require("cors");
@@ -27,6 +27,9 @@ projectPlatform.listen(PORT, () => {
 });
 
 projectPlatform.use("/api", userRouter);
+
+
+
 
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
