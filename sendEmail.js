@@ -1,8 +1,8 @@
 const nodemailer = require("nodemailer");
-const User = require("./models/userModel")
+const Users = require("./models/userModel")
 
-
-const sendUserEmail =  async (userEmail, username)=>{
+/*
+const sendUserEmail =  async (email, name)=>{
     try {
         // Login Details
 
@@ -21,9 +21,9 @@ const sendUserEmail =  async (userEmail, username)=>{
             to: userEmail,
             subject: "Your Login Details",
             html: `<div>
-                <h1>Hello ${username}</h1>
+                <h1>Hello ${name}</h1>
                 <h1>Password: fgjutyrujd</h1>
-                <h1>Email: ${userEmail}</h1>
+                <h1>Email: ${Email}</h1>
                 <h1>Thanks</h1>
             </div>`
         }
@@ -34,5 +34,37 @@ const sendUserEmail =  async (userEmail, username)=>{
         console.log(error)
     }
 }
+*/
 
-module.exports = sendUserEmail
+const sendUserEmail = async (email, name) => {
+    try {
+        // Login Details
+        const mailTransporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.Email,
+                pass: process.env.Email_PASSWORD
+            }
+        });
+
+        // Details to send
+        const detailsToSend = {
+            from: process.env.Email,
+            to: email,
+            subject: "Your Login Details",
+            html: `<div>
+                <h1>Hello ${name}</h1>
+                <h1>Password: fgjutyrujd</h1>
+                <h1>Email: ${email}</h1>
+                <h1>Thanks</h1>
+            </div>`
+        };
+
+        const result = await mailTransporter.sendMail(detailsToSend);
+        console.log("Email sent successfully:", result);
+    } catch (error) {
+        console.log("Error sending email:", error);
+    }
+};
+
+module.exports = sendUserEmail;

@@ -9,65 +9,6 @@ const pdfkit = require("pdfkit");
 const fs = require('fs');
 
 /*
-const issueCertificate = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { email, username } = req.body;
-    
-        // Check if the user exists in your database (replace with your database logic)
-        const user = await Users.findById(id);
-        if (!user) {
-          return res.status(400).json({ message: "Invalid user!" });
-        }
-    
-        // Generate certificate content
-        const certificateText = `Name: ${username}`;
-    
-        // Generate the PDF
-        const pdfDoc = new pdfkit();
-        const pdfPath = 'C:\\Users\\OKPALA STEPHEN\\OneDrive\\Desktop\\food_delivery_system\\certificate.pdf';
-        pdfDoc.pipe(fs.createWriteStream('certificate.pdf'));
-        pdfDoc.text('Certificate of Completion', { align: 'center', size: 20 });
-        pdfDoc.text(certificateText, { align: 'center', size: 16 });
-        pdfDoc.end();
-    
-        const mailTransporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.EMAIL,
-            pass: process.env.EMAIL_PASSWORD,
-          },
-        });
-    
-        const detailsToSend = {
-          from: process.env.EMAIL,
-          to: email,
-          subject: "Your Certificate",
-          attachments: [
-            {
-              filename: "certificate.pdf",
-              content: fs.readFileSync('certificate.pdf'),
-            },
-          ],
-        };
-    
-        const result = await mailTransporter.sendMail(detailsToSend);
-    
-        // Clean up (optional): Delete the temporary file after sending
-        try {
-          await fs.promises.unlink('certificate.pdf'); // Use fs.promises for async deletion
-        } catch (error) {
-          console.error('Error deleting certificate.pdf:', error);
-          // Log the error but don't prevent the response
-        }
-    
-        return res.status(200).json({ message: "Certificate sent successfully" });
-      } catch (error) {
-         return res.status(400).json({ message: error.message });
-        }
-  };
-  */
-
 const loginFn = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -88,30 +29,24 @@ const loginFn = async (req, res) => {
         // when user logout the this accesss token is been refreshed and clears the user out
 
 
-const accessToken = jwt.sign({
-  id: user._id,
-  email: user.email,
-  role: user.role
-}, process.env.ACCESS_TOKEN,{expiresIn: "5d"})
+        const accessToken = jwt.sign({
+        id: user._id,
+        email: user.email,
+        role: user.role
+        }, process.env.ACCESS_TOKEN,{expiresIn: "5d"})
 
-res.cookie("accessToken", accessToken, {
-  httpOnly: true, 
-  //secure: true //this should be set true during deployment
-  
-}) 
+        res.cookie("accessToken", accessToken, {
+        httpOnly: true, 
+        //secure: true //this should be set true during deployment
+        
+        }) 
 
         // Generating Tokens
         // Access Token // PLEASE SIR CAN YOU EXPLAIN WHAT THIS TWO LINEs OF CODES HELP US TO ACHIEVE
 
-<<<<<<< HEAD
         const accessToken = jwt.sign({ user }, `${process.env.ACCESS_TOKEN}`, { expiresIn: "1d" });
 
         const refreshToken = jwt.sign({ user }, `${process.env.REFRESH_TOKEN}`, { expiresIn: "1d" })
-=======
-        //const accessToken = jwt.sign({ user }, `${process.env.ACCESS_TOKEN}`, { expiresIn: "5m" });
-
-        //const refreshToken = jwt.sign({ user }, `${process.env.REFRESH_TOKEN}`, { expiresIn: "5m" })
->>>>>>> c1d360e11f773a98196f953410a0effec8f6fae1
 
         await sendUserEmail(email);
 
@@ -125,6 +60,53 @@ res.cookie("accessToken", accessToken, {
         return res.status(500).json({ message: error.message });
     }
 };
+*/
+const loginFn = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const user = await Users.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User account not found" });
+        }
+
+        const isMatched = await bcrypt.compare(password, user.password);
+
+        if (!isMatched) {
+            return res.status(400).json({ message: "Access Denied!" });
+        }
+
+        // Generate access token
+        const accessToken = jwt.sign({
+            id: user._id,
+            email: user.email,
+            role: user.role
+        }, process.env.ACCESS_TOKEN, { expiresIn: "5d" });
+
+        // Set access token in cookie
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production' // Set to true in production
+        });
+
+        // Generate refresh token
+        const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: "7d" });
+
+        await sendUserEmail(email);
+
+        return res.status(200).json({
+            message: "Login Successful",
+            accessToken,
+            refreshToken,
+            user
+        });
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 
 // I have added logout api here(kenneth_devs)
 
@@ -139,7 +121,7 @@ const logout =async(req, res)=>{
    
   } 
   
-
+/*
 const registerFn = async (req, res) => {
     try {
         const { username, email, password, role } = req.body;
@@ -163,6 +145,32 @@ const registerFn = async (req, res) => {
         await sendUserEmail(email)
 
         return res.status(200).json({ message: "Successful", user: newUser });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+*/
+const registerFn = async (req, res) => {
+    try {
+        const { name, email, password, role } = req.body;
+
+        const existingUser = await Users.findOne({ email });
+
+        if (existingUser) {
+            return res.status(400).json({ message: "User account already exists!" });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = new Users({ name, email, password: hashedPassword, role });
+
+        await newUser.save();
+
+        // Send user's email
+        await sendUserEmail(email);
+
+        return res.status(201).json({ message: "User created successfully", user: newUser });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -265,6 +273,5 @@ module.exports = {
     allUser,
     updateUser,
     welcome,
-    deletedUser,
-    /*issueCertificate*/
+    deletedUser
 }
