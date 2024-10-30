@@ -11,7 +11,8 @@ router.get("/", welcome);
 router.post("/login", validateLogin, loginFn);
 
 //logout route
-router.post("/logout", logout)
+router.post("/logout", logout);
+
 //user registration router
 router.post("/register", validateRegistration, registerFn);
 
@@ -26,11 +27,6 @@ router.put("/update-user/:id", validateToken, updateUser);
 
 //delete user
 router.delete("/delete-users/:id", validateToken, deletedUser);
-
-//send certificate
-/*
-router.post("/issue-certificate/:id", validateToken, issueCertificate)
-*/
 
 
 module.exports = router;

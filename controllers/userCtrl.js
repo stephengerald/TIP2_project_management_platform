@@ -7,6 +7,15 @@ const express = require("express");
 const nodemailer = require("nodemailer");
 const pdfkit = require("pdfkit");
 const fs = require('fs');
+const cookieParser = require("cookie-parser");
+
+const welcome = async(req, res) => {
+    try {
+        return res.status(200).json({ message: "Welcome to project management platform!" });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
 
 /*
 const loginFn = async (req, res) => {
@@ -106,7 +115,6 @@ const loginFn = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
-
 
 // I have added logout api here(kenneth_devs)
 
@@ -210,7 +218,7 @@ const allUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { username, email, password, role } = req.body;
+        const { name, email, password, role } = req.body;
 
         const exitingUser = await Users.findById(id);
         if (!exitingUser) {
@@ -218,7 +226,7 @@ const updateUser = async (req, res) => {
         }
 
         hashedPassword = await bcrypt.hash(password, 12)
-        const updatedUser = await Users.findByIdAndUpdate(id, { username, email, password: hashedPassword, role }, { new: true });
+        const updatedUser = await Users.findByIdAndUpdate(id, { name, email, password: hashedPassword, role }, { new: true });
 
         if (password.length < 8) {
             return res.status(400).json({ message: "Password should be more than eight characters!" })
@@ -229,24 +237,16 @@ const updateUser = async (req, res) => {
     }
 };
 
-const welcome = async(req, res) => {
-    try {
-        return res.status(200).json({ message: "Welcome to project management platform!" });
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-
 const deletedUser = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { username, email, password, role } = req.body;
+        const { name, email, password, role } = req.body;
 
         const deleteUser = await Users.findByIdAndDelete(
             id,
             {
-                username,
+                name,
                 email,
                 password,
                 role

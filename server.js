@@ -25,16 +25,16 @@ const PORT = process.env.PORT || 9000;
 
 connectToDatabase();
 
-projectPlatform.listen(PORT, () => {
-    console.log(`Server is running on ${PORT}`);
-});
+
 
 projectPlatform.use("/api", userRouter);
 projectPlatform.use("/api", projectRoute)
 
 
-
-
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
+});
+
+projectPlatform.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
 });
