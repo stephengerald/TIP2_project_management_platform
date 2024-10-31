@@ -114,9 +114,9 @@ if (priority && !['low', 'medium', 'high'].includes(priority)) {
     if (status && !['not started', 'in progress', 'completed'].includes(status)) {  
         errors.push("Status must be 'not started', 'in progress', or 'completed'.");  
     }
-    //if(!comments){
-    //    errors.push(`Comments are required`)
-    //} 
+    if(!comments){
+        errors.push(`Comments are required`)
+    } 
 
     if (errors.length > 0) {  
         return res.status(400).json({ message: "Validation errors", errors: errors });  
@@ -356,7 +356,12 @@ app.delete('/:commentId', async (req, res) => {
         }  
 
         // Delete the comment  
-        await comment.remove(); // Remove the comment from the database  
+        const deletedComment = await Comment.findByIdAndDelete(commentId); // remove from the database 
+        
+        // Check if the deletion was successful  
+        if (!deletedComment) {  
+            return res.status(400).json({ message: "Unsuccessful deletion." });  
+        }  
 
         // Respond with a success message  
         res.status(200).json({ message: "Comment deleted successfully." });  
@@ -364,4 +369,4 @@ app.delete('/:commentId', async (req, res) => {
         console.error(error); // Log the error for debugging  
         res.status(500).json({ message: "Internal server error." }); // Handle server errors  
     }  
-});  
+});
