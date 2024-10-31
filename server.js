@@ -11,6 +11,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const userRouter = require("./routes/userRoute")
 const projectRoute = require("./routes/projectRoute")
+const collaborationRoute = require("./routes/collaborationRoute")
 
 
 const projectPlatform = express();
@@ -26,9 +27,9 @@ const PORT = process.env.PORT || 9000;
 connectToDatabase();
 
 
-
 projectPlatform.use("/api", userRouter);
 projectPlatform.use("/api", projectRoute)
+projectPlatform.use("/api", collaborationRoute)
 
 
 projectPlatform.use((req, res) => {
