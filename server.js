@@ -330,12 +330,6 @@ app.put('/:commentId', async (req, res) => {
             return res.status(404).json({ message: "Comment not found." });  
         }  
 
-        // Optionally, you can check if the user making the request is authorized to edit the comment  
-        // For example, if you have user authentication implemented:  
-        // if (req.user._id.toString() !== comment.user_id.toString()) {  
-        //     return res.status(403).json({ message: "You are not authorized to edit this comment." });  
-        // }  
-
         // Update the comment  
         comment.content = content; // Update the content of the comment  
         await comment.save(); // Save the updated comment to the database  
@@ -360,12 +354,6 @@ app.delete('/:commentId', async (req, res) => {
         if (!comment) {  
             return res.status(404).json({ message: "Comment not found." });  
         }  
-
-        // Optionally, check if the user is authorized to delete the comment  
-        // For example, if you have user authentication implemented:  
-        // if (req.user._id.toString() !== comment.user_id.toString()) {  
-        //     return res.status(403).json({ message: "You are not authorized to delete this comment." });  
-        // }  
 
         // Delete the comment  
         await comment.remove(); // Remove the comment from the database  
