@@ -1,6 +1,6 @@
 const express = require("express");
 const validateToken = require("../middleware/validateAuth");
-const { newCollaborationFn, allCollaborationFn, singleCollaborationFn, updateCollaborationFn, deleteCollaborationFn } = require("../controllers/collaborationCtrl");
+const { newCollaborationFn, allCollaborationFn, singleCollaborationFn, updateCollaborationFn, deleteCollaborationFn, generateCollaborationReportFn } = require("../controllers/collaborationCtrl");
 const router = express.Router();
 
 //To create new collaboration
@@ -18,5 +18,7 @@ router.put("/update-collaboration", validateToken, updateCollaborationFn);
 //To delete collaboration 
 router.delete("/delete-collaboration", validateToken, deleteCollaborationFn);
 
+//Route for generating collaboration report PDF
+router.get("/collaboration/:id/report", validateToken, generateCollaborationReportFn)
 
 module.exports = router;
