@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+</head>
+<body>
+    <h1>Project Chat</h1>
+    <div id="messages"></div>
+    <form id="form">
+        <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3000');
+
+        const projectId = '12345'; // Replace with actual project ID
+        socket.emit('joinProject', projectId);
+
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const messages = document.getElementById('messages');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('message', { projectId, message: input.value });
+                input.value = '';
+            }
+        });
+
+        socket.on('message', (data) => {
+            const item = document.createElement('div');
+            item.textContent = data.message;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+    </script>
+</body>
+</html>
