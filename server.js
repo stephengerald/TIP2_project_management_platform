@@ -1,7 +1,7 @@
 // routes/taskRoutes.js  
 const express = require('express');  
 const dotenv = require(`dotenv`).config()
-
+const bcrypt = require('bcrypt')
 
   
 const Task = require("./models/Task");
