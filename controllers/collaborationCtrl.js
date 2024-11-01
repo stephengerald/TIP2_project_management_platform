@@ -4,11 +4,12 @@ const jwt = require("jsonwebtoken");
 const express = require('express');
 const router = express.Router();
 const Collaboration = require("../models/collaborationModel");
+
 const PDFDocument = require("pdfkit")
 const fs = require("fs")
 
 // Create a new collaboration entry
-const newCollaborationFn = async(res, req)=> {
+const newCollaborationFn = async(req, res)=> {
     try {
         const newCollaboration = new Collaboration(req.body);
         await newCollaboration.save();
@@ -20,7 +21,7 @@ const newCollaborationFn = async(res, req)=> {
 };
 
 //Get all collaboration 
-const allCollaborationFn = async(res, req)=> {
+const allCollaborationFn = async(req, res)=> {
     try {
         const allCollaboration = await Collaboration.find({ projectId: req.params.projectId });
         return res.status(201).json({ message: "Successful", all_collaboration: allCollaboration });
@@ -31,7 +32,7 @@ const allCollaborationFn = async(res, req)=> {
 }
 
 //Get a single Collaboration
-const singleCollaborationFn = async(res, req)=> {
+const singleCollaborationFn = async(req, res)=> {
     try {
         const singleCollaboration = await Collaboration.findById(req.params.id);
         if(singleCollaboration){
@@ -46,7 +47,7 @@ const singleCollaborationFn = async(res, req)=> {
 };
 
 // Update collaboration
-const updateCollaborationFn = async(res, req)=> {
+const updateCollaborationFn = async(req, res)=> {
     try {
         const updateCollaboration = await Collaboration.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if(updateCollaboration){
@@ -61,7 +62,7 @@ const updateCollaborationFn = async(res, req)=> {
 };
 
 //Delete Collaboration 
-const deleteCollaborationFn = async(res, req)=> {
+const deleteCollaborationFn = async(req, res)=> {
     try {
         const deleteCollaboration = await Collaboration.findByIdAndDelete(req.params.id);
         if(deleteCollaboration){
@@ -74,12 +75,13 @@ const deleteCollaborationFn = async(res, req)=> {
     }
 };
 
+
 // Generate PDF report for collaboration entries
-const generateCollaborationReportFn = async (res, req) => {
+const generateCollaborationReportFn = async (req, res) => {
     try {
-        const generateCollaborationReport = await Collaboration.find({ projectId: req.params.projectId }).populate("sender");
+        const generateCollaborationReport = await Collaboration.find({ projectId: req.params.projectId }).populate('sender');
         if (!generateCollaborationReport.length) {
-            return res.status(404).json({ error: "No collaboration entries found for this project" });
+            return res.status(404).json({ error: 'No collaboration entries found for this project' });
         }
 
         const doc = new PDFDocument();
@@ -87,8 +89,8 @@ const generateCollaborationReportFn = async (res, req) => {
         filename = encodeURIComponent(filename);
 
         // Setting headers for PDF download
-        res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
-        res.setHeader('Content-type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Type', 'application/pdf');
 
         doc.pipe(res);
 
@@ -107,6 +109,11 @@ const generateCollaborationReportFn = async (res, req) => {
         return res.status(400).json({ error: error.message });
     }
 };
+
+module.exports = {
+    generateCollaborationReportFn,
+};
+
 
 module.exports = {
     newCollaborationFn,
