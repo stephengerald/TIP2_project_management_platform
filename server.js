@@ -64,10 +64,15 @@ io.on("connection", (socket) => {
         io.to(data.projectId).emit("message", data);
     });
 
+    socket.on("taskUpdate", (data) => {
+        io.to(data.projectId).emit("taskUpdate", data);
+    });
+
     socket.on("disconnect", () => {
-        console.log("user disconnect");
+        console.log("user disconnected");
     });
 });
+
 
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
