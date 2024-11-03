@@ -7,8 +7,8 @@ const bcrypt = require('bcrypt')
 const Task = require("./models/Task");
 const Comment = require('./models/Comment');
 const connectToDatabase = require('./config/db');
-const Users = require('./models/User');
-const sendUserEmail = require('./sendEmail');
+//const Users = require('./models/User');
+//const sendUserEmail = require('./sendEmail');
 const router = express.Router();  
 
 const app = express()
@@ -25,72 +25,6 @@ app.listen(PORT, () => {
 });  
 
 
-//register users
-app.post(`/`, async (req, res) => { 
-    const { firstName, lastName, username, email, password, role } = req.body;  
-    try {  
-        // Hash the password before saving  
-        const hashedPassword = await bcrypt.hash(password, 10);  
-        const newUser = new Users({firstName, lastName, username, email, password: hashedPassword, role });  
-        await newUser.save(); 
-        
-        await sendUserEmail(email,firstName, password)
-
-        return res.status(201).json({ message: "Registration successful", user: newUser });  
-    } catch (error) {  
-        return res.status(500).json({ message: "Server error", error: error.message });  
-    }  
-})
-//login to the database
-app.post("/" , async (req, res)=>{
-
-    try {
-    
-        const { email, password } = req.body
-    
-        const user = await Users.findOne({email})
-    
-        if(!user){
-            return res.status(404).json({message: "User account not found"})
-        }
-    
-        const isMatched = bcrypt.compare(password, user.password )
-    
-        if(!isMatched){
-            return res.status(400).json({message: "Incorrect password or email!"})
-        }
-
-    
-        // Generating Tokens
-        // Access Token
-    
-        const accessToken = jwt.sign({user}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "30m"})
-    
-        const refreshToken = jwt.sign({user}, `${process.env.REFRESH_TOKEN}`, {expiresIn: "10m"})
-    
-    
-        //await sendUserEmail(email)
-    
-        return res.status(200).json({
-            message: "Login Successful",
-            accessToken,
-            user
-        })
-        
-    } catch (error) {
-        return res.status(500).json({message: error.message})
-    }
-    
-})
-
-app.get("/getUsers", async (req,res)=>{
-    try {
-        const allUsers = await Users.find();
-    res.send(allUsers)
-    } catch (error) {
-        return res.status(500).json({ message: "Server error", error: error.message }) 
-    }
-})
 
 // Create a task  
 app.post('/createTask', async (req, res) => {  
