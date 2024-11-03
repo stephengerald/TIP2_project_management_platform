@@ -15,6 +15,7 @@ const morgan = require("morgan");
 const userRouter = require("./routes/userRoute")
 const projectRoute = require("./routes/projectRoute")
 const collaborationRoute = require("./routes/collaborationRoute")
+const fileRoutes = require("./routes/fileRoutes");
 
 // Initialize express app
 const projectPlatform = express();
@@ -25,10 +26,19 @@ const io = new Server(server, {
     }
 });
 
+/*
+const corsOptions = {
+    origin: 'http://your-frontend-domain.com', // Adjust as necessary
+    optionsSuccessStatus: 200
+};
+projectPlatform.use(cors(corsOptions));
+*/
+
 // Middleware
 projectPlatform.use(express.json());
 projectPlatform.use(cors());
 projectPlatform.use(morgan("combined"));
+projectPlatform.use(cookieParser());
 
 const PORT = process.env.PORT || 9000;
 
@@ -37,8 +47,9 @@ connectToDatabase();
 
 // Route middleware
 projectPlatform.use("/api", userRouter);
-projectPlatform.use("/api", projectRoute)
-projectPlatform.use("/api", collaborationRoute)
+projectPlatform.use("/api", projectRoute);
+projectPlatform.use("/api", collaborationRoute);
+projectPlatform.use("/api", fileRoutes);
 
 // Socket.io setup 
 io.on("connection", (socket) => {
