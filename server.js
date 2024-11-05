@@ -17,9 +17,10 @@ const userRouter = require("./routes/userRoute")
 const projectRoute = require("./routes/projectRoute")
 const collaborationRoute = require("./routes/collaborationRoute")
 const fileRoutes = require("./routes/fileRoutes");
+const forumRoutes = require("./routes/forumRoutes");
+const threadRoutes = require("./routes/threadRoutes");
 const Task = require("./models/Task");
 const Comment = require('./models/Comment');
-const connectToDatabase = require('./config/db');
 const TaskRouter = require('./routes/taskRoute')
 
 
