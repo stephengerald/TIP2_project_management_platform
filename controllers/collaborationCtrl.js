@@ -110,10 +110,6 @@ const generateCollaborationReportFn = async (req, res) => {
     }
 };
 
-module.exports = {
-    generateCollaborationReportFn,
-};
-
 
 module.exports = {
     newCollaborationFn,
