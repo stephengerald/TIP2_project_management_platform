@@ -1,4 +1,5 @@
 
+// routes/taskRoutes.js  
 const express = require("express");
 const connectToDatabase = require("./configuration/DB")
 const Users = require("./models/userModel");
@@ -24,14 +25,8 @@ const Comment = require('./models/Comment');
 const TaskRouter = require('./routes/taskRoute')
 
 
-const projectPlatform = express();
-const server = http.createServer(projectPlatform);
-const io = new Server(server, {
-    cors: { 
-        origin: "*",
-    } 
-});
-
+//const Users = require('./models/User');
+//const sendUserEmail = require('./sendEmail'); 
 
 /*
 const corsOptions = {
@@ -47,48 +42,40 @@ projectPlatform.use(cors());
 projectPlatform.use(morgan("combined"));
 projectPlatform.use(cookieParser());
 
-const PORT = process.env.PORT || 9000;
+/*
+const app = express()
+app.use(express.json()); // Middleware to parse JSON bodies  
 
-// Connect to Database  
-connectToDatabase();
+// const PORT = process.env.PORT || 5000; 
+*/
 
 // Route middleware
 projectPlatform.use("/api", userRouter);
 projectPlatform.use("/api", projectRoute);
 projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
-projectPlatform.use("/api", forumRoutes);
-projectPlatform.use("/api", threadRoutes);
 
-io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
+// Connect to Database  
+connectToDatabase();  
+/*
+app.listen(PORT, () => {  
+    console.log(`Server running at http://localhost:${PORT}`);  
+});  
 
-    socket.on("joinProject", (projectId) => {
-        socket.join(projectId);
-        console.log(`User joined project: ${projectId}`);
-    });
+app.use("/api",TaskRouter)
 
-    socket.on("message", (data) => {
-        io.to(data.projectId).emit("message", data);
-    });
 
     socket.on("taskUpdate", (data) => {
         io.to(data.projectId).emit("taskUpdate", data);
     });
 
     socket.on("disconnect", () => {
-        console.log("User disconnected");
+        console.log("user disconnected");
     });
-
 });
+*/
 
-
-// Handle 404
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
 
-// Start server
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
