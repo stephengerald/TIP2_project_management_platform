@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 // models/Task.js  
 const mongoose = require('mongoose');  
@@ -30,3 +31,5 @@ taskSchema.pre('save', function(next) {
 });  
 
 const Task = mongoose.model('Task', taskSchema); 
+=======
+>>>>>>> 61e2fc453931c2851a28b5943695a66eba1829bb

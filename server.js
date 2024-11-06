@@ -1,9 +1,4 @@
 
-// routes/taskRoutes.js    
-
-  
-
-
 const express = require("express");
 const connectToDatabase = require("./configuration/DB")
 const Users = require("./models/userModel");
@@ -22,9 +17,19 @@ const userRouter = require("./routes/userRoute")
 const projectRoute = require("./routes/projectRoute")
 const collaborationRoute = require("./routes/collaborationRoute")
 const fileRoutes = require("./routes/fileRoutes");
+
+// Initialize express app
+const projectPlatform = express();
+const server = http.createServer(projectPlatform);
+const io = new Server(server, {
+    cors: {
+        origin: "*", // Configure this based on your front-end UR
+    }
+});
+const forumRoutes = require("./routes/forumRoutes");
+const threadRoutes = require("./routes/threadRoutes");
 const Task = require("./models/Task");
 const Comment = require('./models/Comment');
-const connectToDatabase = require('./config/db');
 const TaskRouter = require('./routes/taskRoute')
 
 
@@ -45,12 +50,10 @@ projectPlatform.use(cors());
 projectPlatform.use(morgan("combined"));
 projectPlatform.use(cookieParser());
 
-/*
-const app = express()
-app.use(express.json()); // Middleware to parse JSON bodies  
+const PORT = process.env.PORT || 9000;
 
-// const PORT = process.env.PORT || 5000; 
-*/
+// ConnectTo DATABASE
+connectToDatabase();
 
 // Route middleware
 projectPlatform.use("/api", userRouter);
@@ -58,16 +61,15 @@ projectPlatform.use("/api", projectRoute);
 projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
 
-// Connect to Database  
-connectToDatabase();  
-/*
-app.listen(PORT, () => {  
-    console.log(`Server running at http://localhost:${PORT}`);  
-});  
+projectPlatform.use("/api", taskRouter)
 
-app.use("/api",taskRouter)
-app.use('api/')
+// Socket.io setup 
+io.on("connection", (socket) => {
+    console.log("a user connected:", socket.id);
 
+    socket.on("message", (data) => {
+        io.to(data.projectId).emit("message", data);
+    });
 
     socket.on("taskUpdate", (data) => {
         io.to(data.projectId).emit("taskUpdate", data);
@@ -77,9 +79,13 @@ app.use('api/')
         console.log("user disconnected");
     });
 });
-*/
+
 
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
 
+// Start server
+server.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
+});
