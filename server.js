@@ -8,7 +8,7 @@ const Task = require("./models/Task");
 const Comment = require('./models/Comment');
 const connectToDatabase = require('./config/db');
 
-const TaskRouter = require('./routes/taskRoute')
+const taskRouter = require('./routes/taskRoute')
 //const Users = require('./models/User');
 //const sendUserEmail = require('./sendEmail'); 
 
@@ -25,7 +25,8 @@ app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);  
 });  
 
-app.use("/api",TaskRouter)
+app.use("/api",taskRouter)
+app.use('api/')
 
   
 

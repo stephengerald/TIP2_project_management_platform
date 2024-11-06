@@ -1,53 +1,63 @@
 const mongoose = require ("mongoose")
 
 const Task = require("../models/Task");
+//const { startTimeTracking } = require("./timeTracking");
 
 
-const newTask =  async (req, res) => {  
+const newTask = async (req, res) => {  
     // Input validation  
-    const { title, description, assigned_to, priority, due_date, status, dependencies, comments, project_id } = req.body;  
+    const { title, description, assigned_to, priority, due_date, status, comments } = req.body;  
     const errors = [];  
 
-    // Validate title  
+    // Validate required fields  
     if (!title) {  
         errors.push("Title is required.");  
     }  
-    if(!description){
-        errors.push("Description is required")
-    }
+    if (!description) {  
+        errors.push("Description is required.");  
+    }  
+    if (!Array.isArray(comments) || comments.length === 0) {  
+        errors.push("At least one comment is required.");  
+    }  
 
-// Validate priority  
-if (priority && !['low', 'medium', 'high'].includes(priority)) {  
-    errors.push("Priority must be 'low', 'medium', or 'high'.");  
-}
+    // Validate priority  
+    if (priority && !['low', 'medium', 'high'].includes(priority)) {  
+        errors.push("Priority must be 'low', 'medium', or 'high'.");  
+    }  
 
+    // Validate status  
     if (status && !['not started', 'in progress', 'completed'].includes(status)) {  
         errors.push("Status must be 'not started', 'in progress', or 'completed'.");  
-    }
-    if(!comments){
-        errors.push(`Comments are required`)
-    } 
+    }  
 
+    // Return validation errors if any  
     if (errors.length > 0) {  
-        return res.status(400).json({ message: "Validation errors", errors: errors });  
+        return res.status(400).json({ message: "Validation errors", errors });  
     }  
 
     try {  
         const task = new Task(req.body);  
+
+        // Start time tracking  
+        const startTime = new Date();  
+        task.time_tracking.push({ start_time: startTime });  
+
         await task.save();  
-        
+
         // Count the total number of tasks  
-        const count = await Task.countDocuments();   
-        
+        const count = await Task.countDocuments();  
+
         res.status(201).json({  
-            message: "Successful",  
+            message: "Task created successfully.",  
             task,  
             count  
         });  
     } catch (error) {  
-        res.status(400).json({ message: error.message });  
+        console.error(error); // Log the error for debugging  
+        res.status(500).json({ message: "Internal server error." });  
     }  
-}
+};  
+
 
 const getTasks = async (req, res) => {  
     try {  
