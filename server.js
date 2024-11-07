@@ -16,6 +16,11 @@ const userRouter = require("./routes/userRoute")
 const projectRoute = require("./routes/projectRoute")
 const collaborationRoute = require("./routes/collaborationRoute")
 const fileRoutes = require("./routes/fileRoutes");
+const forumRoutes = require("./routes/forumRoutes");
+const threadRoutes = require("./routes/threadRoutes");
+const Task = require("./models/Task");
+// const Comment = require('./models/Comment');
+//const TaskRouter = require('./routes/taskRoute')
 
 // Initialize express app
 const projectPlatform = express();
@@ -25,15 +30,6 @@ const io = new Server(server, {
         origin: "*", // Configure this based on your front-end UR
     }
 });
-const forumRoutes = require("./routes/forumRoutes");
-const threadRoutes = require("./routes/threadRoutes");
-const Task = require("./models/Task");
-const Comment = require('./models/Comment');
-const TaskRouter = require('./routes/taskRoute')
-
-
-//const Users = require('./models/User');
-//const sendUserEmail = require('./sendEmail'); 
 
 /*
 const corsOptions = {
@@ -59,6 +55,8 @@ projectPlatform.use("/api", userRouter);
 projectPlatform.use("/api", projectRoute);
 projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
+projectPlatform.use("/api", forumRoutes);
+projectPlatform.use("/api", threadRoutes);
 
 // Socket.io setup 
 io.on("connection", (socket) => {
@@ -82,7 +80,7 @@ io.on("connection", (socket) => {
     });
 });
 
-
+// Handle 404
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
