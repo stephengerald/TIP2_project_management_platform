@@ -83,7 +83,7 @@ const loginFn = async (req, res) => {
         const isMatched = await bcrypt.compare(password, user.password);
 
         if (!isMatched) {
-            return res.status(400).json({ message: "Access Denied!" });
+            return res.status(400).json({ message: "Invalid email or password!" });
         }
 
         // Generate access token

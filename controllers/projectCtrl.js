@@ -2,69 +2,116 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../models/project');
 
-const newProject = async (req, res) =>{
-  try {
-    const project = new Project(req.body);
-    await project.save();
-    res.send(project);
-  } catch (err) {
-    res.status(400).send(err);
+//create a project
+const newProject =  async (req, res) => {  
+  const { name, description, tasks, status, isAvailable } = req.body;  
+
+  // Validate required fields  
+  if (!name) {  
+    return res.status(400).json({ msg: "Project name is required" });  
+  }  
+  if(!description){
+    return res.status(400).json({msg: "Please add project description"})
   }
-};
-
-const getProject = async (req, res) => {
-  try {
-    const project = await Project.findById((req.params.id)).populate('tasks').populate('milestones');
-    res.send(project);
-  } catch (err) {
-    res.status(404).send(err);
+  if (!task){
+    return res.status(400).json({msg: "Please input Task ID"})
   }
+
+  try {  
+    const project = new Project({ name, description, tasks, status, isAvailable });  
+    await project.save();  
+    res.status(201).json(project);  
+  } catch (err) {  
+    res.status(500).json({ msg: "Error creating project", error: err.message });  
+  }  
+};  
+
+// Get a project by ID  
+const getProjectById = async (req, res) => {  
+  try {  
+      const project = await Project.findById(req.params.id).populate('tasks').populate('milestones');; 
+      if (!project) {  
+          return res.status(404).json({ msg: "Project not found" });  
+      }  
+      res.status(200).json(project);  
+  } catch (err) {  
+      res.status(500).json({ msg: "Error fetching project", error: err.message });  
+  }  
 };
 
-const updateProject = async (req, res) => {
-    const { status } = req.body;
-    try {
-        const Projects = await Project.findById(req.params.id);
-        if (!Projects) {
-            return res.status(404).json({ msg: ' request not found' });
-        }
-        Project.status = status;
-        await Projects.save();
-        res.json(Projects);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
+// Update a project by ID  
+const updateProject = async (req, res) => {  
+  const { name, description, tasks, status, isAvailable } = req.body;  
+
+  // Validate required fields  
+  if (!name) {  
+      return res.status(400).json({ msg: "Project name is required" });  
+  }  
+  if (!description) {  
+      return res.status(400).json({ msg: "Please add project description" });  
+  }  
+
+  try {  
+      const project = await Project.findByIdAndUpdate(  
+          req.params.id,  
+          { name, description, tasks, status, isAvailable },  
+          { new: true } // Return the updated document  
+      );  
+
+      if (!project) {  
+          return res.status(404).json({ msg: "Project not found" });  
+      }  
+
+      res.status(200).json(project);  
+  } catch (err) {  
+      res.status(500).json({ msg: "Error updating project", error: err.message });  
+  }  
 };
 
-const deleteProject = async (req, res) => {
-    try {
-        await Project.findByIdAndDelete(req.params.id);
-        res.json({ msg: 'Project has been removed' });
+// Delete a project by ID  
+const deleteProject = async (req, res) => {  
+  try {  
+      const project = await Project.findByIdAndDelete(req.params.id);  
 
-        Project.isAvailable = false;
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
+      if (!project) {  
+          return res.status(404).json({ msg: "Project not found" });  
+      }  
+
+      res.status(204).send(); // No content response  
+  } catch (err) {  
+      res.status(500).json({ msg: "Error deleting project", error: err.message });  
+  }  
 };
 
-const searchProject = async (req, res) => {
-    try {
-        const Projects = await Project.find({ isAvailable: true });
-        res.json(Projects);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
+// Search projects  
+const searchProjects = async (req, res) => {  
+  const { name, status } = req.query; // Destructure the query parameters  
+
+  // Create an object to hold the search criteria  
+  const searchConditions = {};  
+
+  // Check and add search criteria based on provided query parameters  
+  if (name) {  
+      searchConditions.name = new RegExp(name, 'i'); // Case-insensitive search  
+  }  
+  if (status) {  
+      searchConditions.status = status; // validate status value  
+  }  
+
+  try {  
+      const projects = await Project.find(searchConditions).populate('tasks'); 
+      res.status(200).json(projects);  
+  } catch (err) {  
+      res.status(500).json({ msg: "Error searching projects", error: err.message });  
+  }  
 };
 
 
 module.exports = {
-    getProject,
+    getProjectById,
     newProject,
     updateProject,
     deleteProject,
-    searchProject
+    searchProjects
 }
 // ...

@@ -3,8 +3,6 @@ const mongoose = require('mongoose')
 const Task = require("../models/Task");
 
 
-const mongoose = require('mongoose'); // Ensure mongoose is imported  
-
 const startTimeTracking = async (req, res) => {  
     const { id } = req.params;  
 
