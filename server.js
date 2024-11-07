@@ -1,3 +1,4 @@
+
 const express = require("express");
 const connectToDatabase = require("./configuration/DB")
 const Users = require("./models/userModel");
@@ -60,14 +61,11 @@ projectPlatform.use("/api", projectRoute);
 projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
 
+projectPlatform.use("/api", taskRouter)
+
 // Socket.io setup 
 io.on("connection", (socket) => {
     console.log("a user connected:", socket.id);
-
-    socket.on("joinProject", (projectId) => {
-        socket.join(projectId);
-        console.log(`User joined project: ${projectId}`);
-    });
 
     socket.on("message", (data) => {
         io.to(data.projectId).emit("message", data);
