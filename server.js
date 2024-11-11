@@ -17,6 +17,11 @@ const userRouter = require("./routes/userRoute")
 const projectRoute = require("./routes/projectRoute")
 const collaborationRoute = require("./routes/collaborationRoute")
 const fileRoutes = require("./routes/fileRoutes");
+const forumRoutes = require("./routes/forumRoutes");
+const threadRoutes = require("./routes/threadRoutes");
+const Task = require("./models/Task");
+// const Comment = require('./models/Comment');
+//const TaskRouter = require('./routes/taskRoute')
 
 const forumRoutes = require("./routes/forumRoutes");
 const threadRoutes = require("./routes/threadRoutes");
@@ -63,6 +68,8 @@ projectPlatform.use("/api", userRouter);
 projectPlatform.use("/api", projectRoute);
 projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
+projectPlatform.use("/api", forumRoutes);
+projectPlatform.use("/api", threadRoutes);
 
 //projectPlatform.use("/api", taskRouter)
 
@@ -83,7 +90,7 @@ io.on("connection", (socket) => {
     });
 });
 
-
+// Handle 404
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
