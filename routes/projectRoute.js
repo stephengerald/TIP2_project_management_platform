@@ -1,5 +1,5 @@
 const express = require("express")
-const {getProject,newProject,updateProject, deleteProject, searchProject} = require("../controllers/projectCtrl")
+const {newProject,updateProject, deleteProject, getProjectById, searchProjects} = require("../controllers/projectCtrl")
 const {validateProjectAdmin} = require("../middleware/validProject")
 
 
@@ -7,7 +7,7 @@ const router = express.Router()
 
 
 // to get a project by Id
-router.get("/getProject/:id",  getProject);
+router.get("/getProject/:id", getProjectById);
 
 //create a new project
 router.post("/newProject", validateProjectAdmin, newProject)
@@ -19,7 +19,7 @@ router.put("/updateProject/:id", validateProjectAdmin, updateProject);
 router.delete("/deleteProject/:id", validateProjectAdmin, deleteProject);
 
 //search to get all available project
-router.get("/searchProject", searchProject)
+router.get("/searchProject", searchProjects)
 
 
 
