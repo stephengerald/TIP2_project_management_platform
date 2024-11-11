@@ -130,8 +130,8 @@ const completeRegistration = async (req, res) => {
     const { email, fullname, password } = req.body;  
 
     const user = await User.findOne({ email });  
-    if (!user) {  
-        return res.status(400).json({ message: 'User does not exist or has not verified their OTP' });  
+    if (user) {  
+        return res.status(400).json({ message: 'User already exist' });  
     }  
 
     // Hash the user's password  
