@@ -1,7 +1,7 @@
 
 const express = require("express");
 const connectToDatabase = require("./configuration/DB")
-const Users = require("./models/userModel");
+const User = require("./models/userModel");
 const Project = require("./models/project")
 const dotenv = require("dotenv").config();
 const bcrypt = require("bcryptjs");
@@ -24,6 +24,13 @@ const Task = require("./models/Task");
 // const Comment = require('./models/Comment');
 //const TaskRouter = require('./routes/taskRoute')
 
+const forumRoutes = require("./routes/forumRoutes");
+const threadRoutes = require("./routes/threadRoutes");
+const Task = require("./models/Task");
+//const Comment = require('./models/Comment');
+//const taskRouter = require('./routes/taskRoute')
+
+
 // Initialize express app
 const projectPlatform = express();
 const server = http.createServer(projectPlatform);
@@ -32,6 +39,11 @@ const io = new Server(server, {
         origin: "*", // Configure this based on your front-end UR
     }
 });
+
+
+
+//const Users = require('./models/User');
+//const sendUserEmail = require('./sendEmail'); 
 
 /*
 const corsOptions = {
@@ -45,7 +57,7 @@ projectPlatform.use(cors(corsOptions));
 projectPlatform.use(express.json());
 projectPlatform.use(cors());
 projectPlatform.use(morgan("combined"));
-projectPlatform.use(cookieParser());
+//projectPlatform.use(cookieParser());
 
 const PORT = process.env.PORT || 9000;
 
@@ -60,7 +72,7 @@ projectPlatform.use("/api", fileRoutes);
 projectPlatform.use("/api", forumRoutes);
 projectPlatform.use("/api", threadRoutes);
 
-projectPlatform.use("/api", taskRouter)
+//projectPlatform.use("/api", taskRouter)
 
 // Socket.io setup 
 io.on("connection", (socket) => {
@@ -83,6 +95,11 @@ io.on("connection", (socket) => {
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
+
+
+
+
+
 
 // Start server
 server.listen(PORT, () => {

@@ -1,4 +1,4 @@
-const Users = require("../models/userModel");
+const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendUserEmail = require("../sendEmail");
@@ -8,6 +8,10 @@ const nodemailer = require("nodemailer");
 const pdfkit = require("pdfkit");
 const fs = require('fs');
 const cookieParser = require("cookie-parser");
+const transporter = require('../configuration/smtpConfig');
+
+
+const TemporaryUser = require('../models/tempuser'); // Make sure the path is correct    
 
 const welcome = async(req, res) => {
     try {
@@ -17,261 +21,309 @@ const welcome = async(req, res) => {
     }
 };
 
-/*
-const loginFn = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const user = await Users.findOne({ email });
-
-        if (!user) {
-            return res.status(404).json({message: "User account not found"});
-        }
-
-        const isMatched = await bcrypt.compare(password, user.password);
-
-        if (!isMatched) {
-            return res.status(400).json({ message: "Access Denied!" })
-        }
-        
-        //GENERATE COOKIE ACCESS AND SEND TO THE USER USING JSONWEBTOKEN
-        // when user logout the this accesss token is been refreshed and clears the user out
 
 
-        const accessToken = jwt.sign({
-        id: user._id,
-        email: user.email,
-        role: user.role
-        }, process.env.ACCESS_TOKEN,{expiresIn: "5d"})
+// in your controller file  
 
-        res.cookie("accessToken", accessToken, {
-        httpOnly: true, 
-        //secure: true //this should be set true during deployment
-        
-        }) 
 
-        // Generating Tokens
-        // Access Token // PLEASE SIR CAN YOU EXPLAIN WHAT THIS TWO LINEs OF CODES HELP US TO ACHIEVE
 
-        const accessToken = jwt.sign({ user }, `${process.env.ACCESS_TOKEN}`, { expiresIn: "1d" });
+const generateOTP = () => {  
+    return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP  
+};  
+//endpoint to register user with email first
+const registerUser = async (req, res) => {  
+    const { email } = req.body;  
 
-        const refreshToken = jwt.sign({ user }, `${process.env.REFRESH_TOKEN}`, { expiresIn: "1d" })
+    // Check if an OTP has already been sent  
+    const existingTempUser = await TemporaryUser.findOne({ email });  
+    if (existingTempUser) {  
+        return res.status(400).json({ message: 'An OTP has already been sent to this email.' });  
+    }  
 
-        await sendUserEmail(email);
+    const otp = generateOTP();  
+    const otpExpires = Date.now() + 300000; // 5 minutes expiration  
 
-        return res.status(200).json({
-            message: "Login Successful",
-            accessToken,
-            user
-        })
+    const tempUser = new TemporaryUser({ email, otp, otpExpires });  
+    await tempUser.save();  
 
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
+    // Send OTP via email  
+    await transporter.sendMail({  
+        to: email,  
+        subject: 'Confirmation Code',  
+        text: `Your OTP is ${otp}. It expires in 5 minutes.`,  
+    });  
+
+    res.status(200).json({ message: `OTP has been sent to ${email}` });  
 };
-*/
-const loginFn = async (req, res) => {
-    try {
-        const { email, password } = req.body;
 
-        const user = await Users.findOne({ email });
+// Resend OTP endpoint  
+const resendOTP = async (req, res) => {  
+    const { email } = req.body;  
 
-        if (!user) {
-            return res.status(404).json({ message: "User account not found" });
-        }
+    // Check for existing temporary user  
+    let existingTempUser = await TemporaryUser.findOne({ email });  
 
-        const isMatched = await bcrypt.compare(password, user.password);
+    // Generate a new OTP  
+    const otp = generateOTP();  
+    const otpExpires = Date.now() + 300000; // 5 minutes expiration  
 
-        if (!isMatched) {
-            return res.status(400).json({ message: "Access Denied!" });
-        }
+    if (existingTempUser) {  
+        // If user exists, update the existing user with new OTP and expiration time  
+        existingTempUser.otp = otp;  
+        existingTempUser.otpExpires = otpExpires;  
+        await existingTempUser.save();  
+    } else {  
+        // If no existing user, create a new one  
+        existingTempUser = new TemporaryUser({ email, otp, otpExpires });  
+        await existingTempUser.save();  
+    }  
 
-        // Generate access token
-        const accessToken = jwt.sign({
-            id: user._id,
-            email: user.email,
-            role: user.role
-        }, process.env.ACCESS_TOKEN, { expiresIn: "5d" });
-
-        // Set access token in cookie
-        res.cookie("accessToken", accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production' // Set to true in production
+    // Send OTP via email  
+    try {  
+        await transporter.sendMail({  
+            to: email,  
+            subject: 'Confirmation Code',  
+            html: `  
+                <html>  
+                    <body>  
+                        <p>Your new OTP is <span style="color: blue; font-weight: bold;">${otp}</span>.</p>  
+                        <p>It expires in 5 minutes.</p>  
+                    </body>  
+                </html>  
+            `,  
         });
+        res.status(200).json({ message: `OTP has been sent to ${email}` });  
+    } catch (error) {  
+        console.error('Error sending email:', error);  
+        return res.status(500).json({ message: 'Error sending OTP, please try again.' });  
+    }  
+};  
+//verifyOtp endpoint
+const verifyOTP = async (req, res) => {  
+    const { email, otp } = req.body;  
 
-        // Generate refresh token
-        const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: "7d" });
+    try {  
+        // Find the user by email  
+        const user = await TemporaryUser.findOne({ email });  
+        
+        // Check if user exists and if the OTP is valid and not expired  
+        if (!user || user.otp !== otp || Date.now() > user.otpExpires) {  
+            return res.status(400).json({ message: 'Invalid or expired OTP' });  
+        }  
 
-        await sendUserEmail(email);
+        // Optionally clear OTP to prevent reuse without clearing the requirement for expiration  
+        user.otp = undefined; // Clear OTP to prevent reuse  
+        
+        // You could either leave otpExpires as is  
+        // or set to a default value or a final expiry value if using in your process.  
+        // user.otpExpires = new Date(); // Set to current time if needed, for clarity  
+        await user.save();  
 
-        return res.status(200).json({
-            message: "Login Successful",
-            accessToken,
-            refreshToken,
-            user
-        });
+        res.status(200).json({ message: 'OTP verified! Please provide your full name and password' });  
+    } catch (error) {  
+        console.error('Error verifying OTP:', error);  
+        return res.status(500).json({ message: 'Internal server error' });  
+    }  
+};
+//endpoint to complete the registration with fullname and password
+const completeRegistration = async (req, res) => {  
+    const { email, fullname, password } = req.body;  
 
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
+    const user = await User.findOne({ email });  
+    if (user) {  
+        return res.status(400).json({ message: 'User already exist' });  
+    }  
+
+    // Hash the user's password  
+    const hashedPassword = await bcrypt.hash(password, 10);  
+    user.fullname = fullname;  
+    user.password = hashedPassword;  
+
+    await user.save();  
+
+    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });  
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: '7d' });  
+
+    res.status(201).json({ accessToken, refreshToken });  
+};  
+
+const updateUser = async (req, res) => {  
+    const { accessToken, fullname, email, password } = req.body; 
+    try {    
+        // Find user by ID  
+        const user = await User.findById(userId);  
+        if (!user) {  
+            return res.status(404).json({ message: 'User not found' });  
+        }  
+
+        // Update user details  
+        if (fullname) user.fullname = fullname;  
+        if (email) user.email = email;  
+        if (password) {  
+            // Hash the new password before saving  
+            const hashedPassword = await bcrypt.hash(password, 10);  
+            user.password = hashedPassword;  
+        }  
+        
+        await user.save();  
+
+        res.status(200).json({ message: 'Successful' });  
+    } catch (error) {  
+        console.error(`Update user error: ${error.message}`);  
+        return res.status(401).json({ message: 'Invalid or expired token' });  
+    }  
+};  
+
+const loginUser = async (req, res) => {  
+    const { email, password } = req.body;  
+
+    const user = await User.findOne({ email });  
+    if (!user) {  
+        return res.status(400).json({ message: 'Invalid credentials' });  
+    }  
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);  
+    if (!isPasswordValid) {  
+        return res.status(400).json({ message: 'Invalid credentials' });  
+    }  
+
+    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });  
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: '7d' });  
+
+    res.status(200).json({ accessToken, refreshToken });  
 };
 
-// I have added logout api here(kenneth_devs)
+// DELETE request to delete a user by ID  
+//app.delete('/user/:id', 
+const deleteUser = async (req, res) => {  
+    const userId = req.params.id;  // Get the user ID from the URL parameters  
 
-const logout =async(req, res)=>{
-    try{
-  
-      res.clearCookie("passToken")
-    res.status(200).json({message: "Logout Successful"})
-    } catch (error) {
-      return res.status(500).json({message: "can't Logout!"})
-    }
-   
-  } 
-  
-/*
-const registerFn = async (req, res) => {
-    try {
-        const { username, email, password, role } = req.body;
+    try {  
+        // Find and delete the user  
+        const user = await User.findByIdAndDelete(userId);  
+        
+        if (!user) {  
+            return res.status(404).json({ message: 'User not found' });  
+        }  
 
-        const exitingUser = await Users.findOne({ email });
+        res.status(200).json({ message: 'User deleted successfully' });  
+    } catch (error) {  
+        console.error(`Delete user error: ${error.message}`);  
+        res.status(500).json({ message: 'Internal server error' });  
+    }  
+};  
 
-        if (exitingUser) {
-            return res.status(400).json({ message: "User account already exist!" });
-        }
+// An array to store blacklisted refresh tokens   
+let refreshTokenBlacklist = [];   
 
-        // Hash password
+const logout = async (req, res) => {  
+    const { refreshToken } = req.body;  
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+    try {  
+        // Check if the refresh token is provided  
+        if (!refreshToken) {  
+            return res.status(400).json({ message: 'Refresh token is required' });  
+        }  
 
-        const newUser = new Users({ username, email, password: hashedPassword, role });
+        // Invalidate the refresh token by adding it to the blacklist  
+        refreshTokenBlacklist.push(refreshToken);  
 
-        await newUser.save();
+        //  remove the refresh token from the database 
 
-        // send Users Email
-
-        await sendUserEmail(email)
-
-        return res.status(200).json({ message: "Successful", user: newUser });
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-*/
-const registerFn = async (req, res) => {
-    try {
-        const { name, email, password, role } = req.body;
-
-        const existingUser = await Users.findOne({ email });
-
-        if (existingUser) {
-            return res.status(400).json({ message: "User account already exists!" });
-        }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = new Users({ name, email, password: hashedPassword, role });
-
-        await newUser.save();
-
-        // Send user's email
-        await sendUserEmail(email);
-
-        return res.status(201).json({ message: "User created successfully", user: newUser });
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
+        // Respond with a success message  
+        res.status(200).json({ message: 'Logged out successfully' });  
+    } catch (error) {  
+        // Handle unexpected errors  
+        console.error(`Logout error: ${error.message}`);  
+        res.status(500).json({ message: 'Internal Server Error' });  
+    }  
 };
 
-const singleUser = async (req, res) => {
-    try {
-        const { id } = req.params;
+module.exports = {  
+        registerUser,  
+        verifyOTP,  
+        completeRegistration,
+        generateOTP,
+        updateUser,
+        loginUser,
+        deleteUser,
+        welcome,
+        logout,
+        resendOTP
+    };
 
-        // Validate ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'Invalid ObjectId' });
-        }
 
-        const user = await Users.findById(id);
+// // User Schema  
+// const UserSchema = new mongoose.Schema({  
+//     googleId: String,  
+//     username: String,  
+//     thumbnail: String,  
+// });  
 
-        return res.status(200).json({
-            message: "Successful",
-            user
-        })
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
+// const User = mongoose.model('User', UserSchema);  
 
-const allUser = async (req, res) => {
-    try {
-        const allUsers = await Users.find();
+// // Middleware for cookie session  
+// app.use(cookieSession({  
+//     maxAge: 24 * 60 * 60 * 1000, // 24 hours  
+//     keys: [process.env.COOKIE_SECRET],
+// }));  
 
-        return res.status(200).json({ message: "Successful", count: allUsers.length, allUsers });
+// // Initialize Passport  
+// app.use(passport.initialize());  
+// app.use(passport.session());  
 
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
+// // Google Strategy  
+// passport.use(new GoogleStrategy({  
+//     clientID: 'YOUR_GOOGLE_CLIENT_ID',  
+//     clientSecret: 'YOUR_GOOGLE_CLIENT_SECRET',  
+//     callbackURL: '/auth/google/callback',  
+// }, async (accessToken, refreshToken, profile, done) => {  
+//     const existingUser = await User.findOne({ googleId: profile.id });  
+//     if (existingUser) {  
+//         return done(null, existingUser); // User already exists  
+//     }  
 
-const updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, email, password, role } = req.body;
+//     // If user doesn't exist, create a new one  
+//     const newUser = await new User({  
+//         googleId: profile.id,  
+//         username: profile.displayName,  
+//         thumbnail: profile._json.picture,  
+//     }).save();  
+//     done(null, newUser);  
+// }));  
 
-        const exitingUser = await Users.findById(id);
-        if (!exitingUser) {
-            return res.status(400).json({ message: "User not found!" })
-        }
+// // Serialize user to session  
+// passport.serializeUser((user, done) => {  
+//     done(null, user.id);  
+// });  
 
-        hashedPassword = await bcrypt.hash(password, 12)
-        const updatedUser = await Users.findByIdAndUpdate(id, { name, email, password: hashedPassword, role }, { new: true });
+// // Deserialize user from session  
+// passport.deserializeUser((id, done) => {  
+//     User.findById(id).then(user => {  
+//         done(null, user);  
+//     });  
+// });  
 
-        if (password.length < 8) {
-            return res.status(400).json({ message: "Password should be more than eight characters!" })
-        }
-        return res.status(200).json({ message: "Successful", user: updatedUser })
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
+// // Routes  
+// app.get('/auth/google', passport.authenticate('google', {  
+//     scope: ['profile', 'email'],  
+// }));  
 
-const deletedUser = async (req, res) => {
-    try {
-        const { id } = req.params;
+// app.get('/auth/google/callback', passport.authenticate('google'), (req, res) => {  
+//     // Successful authentication; redirect to a secure area or home page  
+//     res.redirect('/dashboard'); // Change to your route  
+// });  
 
-        const { name, email, password, role } = req.body;
+// // Dashboard Example Route  
+// app.get('/dashboard', (req, res) => {  
+//     if (!req.user) {  
+//         return res.status(401).send('You are not authenticated');  
+//     }  
+//     res.send(`<h1>Welcome ${req.user.username}</h1><img src="${req.user.thumbnail}" alt="User Thumbnail"/>`);  
+// });  
 
-        const deleteUser = await Users.findByIdAndDelete(
-            id,
-            {
-                name,
-                email,
-                password,
-                role
-            },
-            { new: true });
-
-        const availableUsers = await Users.find();
-
-        return res.status(200).json({
-            message: "Successful",
-            count: availableUsers.length,
-            users: { deleteUser, availableUsers }
-        })
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-
-module.exports = {
-    loginFn,
-    logout,
-    registerFn,
-    singleUser,
-    allUser,
-    updateUser,
-    welcome,
-    deletedUser
-}
+// // Logout Route  
+// app.get('/logout', (req, res) => {  
+//     req.logout();  
+//     res.redirect('/'); // Change to your route  
+// });  
