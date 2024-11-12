@@ -27,10 +27,10 @@ const createComt = async (req, res) => {
         // Update the task to include the new comment ID  
         await Task.findByIdAndUpdate(taskId, { $push: { comments: comment._id } });  
 
-        res.status(201).json(comment); // Return the created comment  
+        return res.status(201).json(comment); // Return the created comment  
     } catch (error) {  
         console.error(error); // Log the error for debugging  
-        res.status(500).json({ message: "Internal server error." }); // General server error response  
+        return res.status(500).json({ message: "Internal server error." }); // General server error response  
     }  
 }
 
@@ -49,10 +49,10 @@ const getComt = async (req, res) => {
         }  
 
         // Respond with the populated comments  
-        res.status(200).json(comments);  
+        return res.status(200).json(comments);  
     } catch (error) {  
         console.error(error); 
-        res.status(500).json({ message: "Internal server error." }); // Handle server errors  
+        return res.status(500).json({ message: "Internal server error." }); // Handle server errors  
     }  
 }
 
@@ -79,10 +79,10 @@ const updateComt = async (req, res) => {
         await comment.save(); // Save the updated comment to the database  
 
         // Respond with the updated comment  
-        res.status(200).json(comment);  
+        return res.status(200).json(comment);  
     } catch (error) {  
         console.error(error); // Log the error for debugging  
-        res.status(500).json({ message: "Internal server error." }); // Handle server errors  
+        return res.status(500).json({ message: "Internal server error." }); // Handle server errors  
     }  
 }
 
@@ -107,10 +107,10 @@ const deleteComt = async (req, res) => {
         }  
 
         // Respond with a success message  
-        res.status(200).json({ message: "Comment deleted successfully." });  
+        return res.status(200).json({ message: "Comment deleted successfully." });  
     } catch (error) {  
         console.error(error); // Log the error for debugging  
-        res.status(500).json({ message: "Internal server error." }); // Handle server errors  
+        return res.status(500).json({ message: "Internal server error." }); // Handle server errors  
     }  
 }
 

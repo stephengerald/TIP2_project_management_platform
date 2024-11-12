@@ -20,9 +20,9 @@ const newProject =  async (req, res) => {
   try {  
     const project = new Project({ name, description, tasks, status, isAvailable });  
     await project.save();  
-    res.status(201).json(project);  
+    return res.status(201).json(project);  
   } catch (err) {  
-    res.status(500).json({ msg: "Error creating project", error: err.message });  
+    return res.status(500).json({ msg: "Error creating project", error: err.message });  
   }  
 };  
 
@@ -33,9 +33,9 @@ const getProjectById = async (req, res) => {
       if (!project) {  
           return res.status(404).json({ msg: "Project not found" });  
       }  
-      res.status(200).json(project);  
+      return res.status(200).json(project);  
   } catch (err) {  
-      res.status(500).json({ msg: "Error fetching project", error: err.message });  
+      return res.status(500).json({ msg: "Error fetching project", error: err.message });  
   }  
 };
 
@@ -62,9 +62,9 @@ const updateProject = async (req, res) => {
           return res.status(404).json({ msg: "Project not found" });  
       }  
 
-      res.status(200).json(project);  
+      return res.status(200).json(project);  
   } catch (err) {  
-      res.status(500).json({ msg: "Error updating project", error: err.message });  
+      return res.status(500).json({ msg: "Error updating project", error: err.message });  
   }  
 };
 
@@ -77,9 +77,9 @@ const deleteProject = async (req, res) => {
           return res.status(404).json({ msg: "Project not found" });  
       }  
 
-      res.status(204).send(); // No content response  
+      return res.status(204).send(); // No content response  
   } catch (err) {  
-      res.status(500).json({ msg: "Error deleting project", error: err.message });  
+      return res.status(500).json({ msg: "Error deleting project", error: err.message });  
   }  
 };
 
@@ -100,9 +100,9 @@ const searchProjects = async (req, res) => {
 
   try {  
       const projects = await Project.find(searchConditions).populate('tasks'); 
-      res.status(200).json(projects);  
+      return res.status(200).json(projects);  
   } catch (err) {  
-      res.status(500).json({ msg: "Error searching projects", error: err.message });  
+      return res.status(500).json({ msg: "Error searching projects", error: err.message });  
   }  
 };
 
