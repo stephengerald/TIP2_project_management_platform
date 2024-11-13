@@ -6,16 +6,27 @@ const Task = require("../models/Task");
 
 const newTask = async (req, res) => {  
     // Input validation  
-    const { title, description, assigned_to, priority, due_date, status, comments } = req.body;  
+    const { title, type, description, start_date, end_date,  assigned_to, priority, status, comments } = req.body;  
     const errors = [];  
 
     // Validate required fields  
     if (!title) {  
         errors.push("Title is required.");  
     }  
+    if (!type){
+        errors.push("Task type is required")
+    }
     if (!description) {  
-        errors.push("Description is required.");  
+        errors.push("Description is required.");
     }  
+    if (!start_date){
+        errors.push('Please input start date')
+    }
+    if(!end_date){
+        errors.push('Please input the end date')
+    }
+
+
     if (!Array.isArray(comments) || comments.length === 0) {  
         errors.push("At least one comment is required.");  
     }  

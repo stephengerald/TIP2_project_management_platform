@@ -3,13 +3,17 @@
 const mongoose = require('mongoose');  
 
 const taskSchema = new mongoose.Schema({  
-    title: { type: String, required: true },  
+    title: { type: String, required: true }, 
+    type: { type: String, required: true},
     description: { type: String },  
     assigned_to: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' },  
-    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },  
-    due_date: { type: Date },  
+    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' }, 
+    start_date: { type: Date, required:true},
+    end_date: { type: Date },  
+    roles:[{ type:String, enum: ['Project Manager', 'Product Team Lead', 'Data Analyst', 'UI/UX Designer', 
+        'Product Team Lead', 'Product Marketing Manager', 'Agile Coach', 'Software Engineer']}],
     status: { type: String, enum: ['not started', 'in progress', 'completed'], default: 'not started' },
-    //dependencies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],  
+     
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],  
     created_at: { type: Date, default: Date.now },  
     updated_at: { type: Date, default: Date.now },
