@@ -387,19 +387,37 @@ const verifyOtp = async (req, res) => {
     }
 };
 
-const updateUser = async (req, res) => {
-    const { userId, fullname, email, password } = req.body;
+const resendOtp = async (req, res) => {
+    const { email } = req.body;
 
     try {
-        // Find user by ID
-        const user = await User.findById(userId);
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        // Send new OTP
+        await sendOtp(user);
+
+        return res.status(200).json({ message: 'OTP resent successfully' });
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+};
+
+const updateUser = async (req, res) => {
+    const { fullname, email, password } = req.body;
+
+    try {
+        // Find user by email
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Update user details
         if (fullname) user.fullname = fullname;
-        if (email) user.email = email;
         if (password) {
             // Hash the new password before saving
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -449,6 +467,7 @@ const getUserById = async (req, res) => {
 module.exports = {
     registerUser,
     verifyOtp,
+    resendOtp,
     updateUser,
     loginUser,
     deleteUser,
@@ -457,3 +476,7 @@ module.exports = {
     getAllUsers,
     getUserById
 };
+
+
+
+
