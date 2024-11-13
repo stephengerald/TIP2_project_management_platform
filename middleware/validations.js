@@ -4,9 +4,13 @@
 
 // Validate Registrstion
 const validateRegistration = async(req, res, next)=>{
-    const { firstName, lastName, email, password } = req.body
+    const { fullname, email, password } = req.body
     
     const errors = []
+
+    if(!fullname){
+        errors.push("Please add your fullname")
+    }
 
     if(!email){
         errors.push("Please add email")

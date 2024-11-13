@@ -3,6 +3,8 @@ const express = require("express");
 const connectToDatabase = require("./configuration/DB")
 const User = require("./models/userModel");
 const Project = require("./models/project")
+const Comment = require('./models/commentModel');
+const Task = require("./models/Task");
 const dotenv = require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
@@ -20,15 +22,8 @@ const collaborationRoute = require("./routes/collaborationRoute")
 const fileRoutes = require("./routes/fileRoutes");
 const forumRoutes = require("./routes/forumRoutes");
 const threadRoutes = require("./routes/threadRoutes");
-const Task = require("./models/Task");
-// const Comment = require('./models/Comment');
-//const TaskRouter = require('./routes/taskRoute')
-
-const forumRoutes = require("./routes/forumRoutes");
-const threadRoutes = require("./routes/threadRoutes");
-const Task = require("./models/Task");
-//const Comment = require('./models/Comment');
-//const taskRouter = require('./routes/taskRoute')
+const TaskRouter = require('./routes/taskRoute');
+const CommentRoutes = require("./routes/commentRoute")
 
 
 // Initialize express app
@@ -71,8 +66,7 @@ projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
 projectPlatform.use("/api", forumRoutes);
 projectPlatform.use("/api", threadRoutes);
-
-//projectPlatform.use("/api", taskRouter)
+//projectPlatform.use("/api", TaskRouter)
 
 // Socket.io setup 
 io.on("connection", (socket) => {
@@ -95,10 +89,6 @@ io.on("connection", (socket) => {
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
-
-
-
-
 
 
 // Start server
