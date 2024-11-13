@@ -1,6 +1,19 @@
 const express = require("express");
-const {  logout, updateUser, welcome, registerUser, verifyOTPAndRegister, loginUser, deleteUser, verifyOTP, resendOTP, } = require("../controllers/userCtrl");
-const { validateLogin, validateRegistration } = require("../middleware/validations");
+const {  logout,
+    updateUser,
+    welcome,
+    registerUser,
+    //verifyOTPAndRegister,
+    loginUser,
+    deleteUser,
+    verifyOtp,
+    getAllUsers,
+    getUserById, 
+    //resendOTP,
+     } = require("../controllers/userCtrl");
+const { validateLogin, 
+    //validateRegistration 
+    } = require("../middleware/validations");
 const validateToken = require("../middleware/validateAuth");
 
 const router = express.Router();
@@ -14,18 +27,18 @@ router.post("/login", validateLogin, loginUser);
 router.post("/logout", logout);
 
 //user registration router
-router.post("/register",registerUser);
+router.post("/register", registerUser);
 
 //verify Otp
-router.post("/verifyOtp", verifyOTP );
+router.post("/verifyOtp", verifyOtp );
 //resend OTP
-router.post('/resendOtp', resendOTP)
+//router.post('/resendOtp', resendOTP)
 
 // find user by Id
-router.get("/user/:id", validateToken);
+router.get("/user/:id", validateToken, getUserById);
 
 // Get all users
-router.get("/all-users", validateToken );
+router.get("/all-users", validateToken, getAllUsers );
 
 //Update user
 router.put("/update-user/:id", validateToken, updateUser);

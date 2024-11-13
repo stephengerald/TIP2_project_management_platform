@@ -58,14 +58,14 @@ const newTask = async (req, res) => {
         // Count the total number of tasks  
         const count = await Task.countDocuments();  
 
-        res.status(201).json({  
+        return res.status(201).json({  
             message: "Task created successfully.",  
             task,  
             count  
         });  
     } catch (error) {  
         console.error(error); // Log the error for debugging  
-        res.status(500).json({ message: "Internal server error." });  
+        return res.status(500).json({ message: "Internal server error." });  
     }  
 };  
 
@@ -73,9 +73,9 @@ const newTask = async (req, res) => {
 const getTasks = async (req, res) => {  
     try {  
         const tasks = await Task.find().populate('assigned_to').populate('comments');  
-        res.json(tasks);  
+        return res.status(200).json(tasks);  
     } catch (error) {  
-        res.status(500).json({ message: error.message });  
+        return res.status(500).json({ message: error.message });  
     }  
 }
 
