@@ -11,6 +11,9 @@ const fs = require('fs');
 const cookieParser = require("cookie-parser");
 const transporter = require('../configuration/smtpConfig');
 const TemporaryUser = require('../models/tempuser'); // Make sure the path is correct    
+const generateAccessToken = require("../utility/generateAccessToken");
+const generateRefreshToken = require("../utility/generateRefreshToken");
+
 
 const welcome = async(req, res) => {
     try {
@@ -183,8 +186,8 @@ const loginUser = async (req, res) => {
         return res.status(400).json({ message: 'Invalid credentials' });  
     }  
 
-    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });  
-    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: '7d' });  
+    const accessToken = generateAccessToken(user)  
+    const refreshToken = generateRefreshToken(user);  
 
     return res.status(200).json({ message: "Successful", access_token: accessToken, refresh_token: refreshToken });  
 };
@@ -378,8 +381,8 @@ const verifyOtp = async (req, res) => {
         await user.save();
 
         // Generate JWT tokens
-        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });  
-        const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: '7d' });
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
 
         return res.status(200).json({ message: 'OTP verified successfully, account activated', accessToken, refreshToken });
     } catch (error) {
@@ -436,8 +439,13 @@ const updateUser = async (req, res) => {
 // Get all users
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find();
-        return res.status(200).json({ message: "successful", all_users: users, count: users.length });
+        const user = await User.find().select('-password'); // Exclude password field
+        console.log(`Users found: ${user.length}`);
+        return res.status(200).json({
+            message: "successful",
+            count: user.length,
+            all_users: user,
+        });
     } catch (error) {
         console.error(`Get all users error: ${error.message}`);
         return res.status(500).json({ message: 'Internal server error' });
