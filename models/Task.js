@@ -13,7 +13,6 @@ const taskSchema = new mongoose.Schema({
     roles:[{ type:String, enum: ['Project Manager', 'Product Team Lead', 'Data Analyst', 'UI/UX Designer', 
         'Product Team Lead', 'Product Marketing Manager', 'Agile Coach', 'Software Engineer']}],
     status: { type: String, enum: ['not started', 'in progress', 'completed'], default: 'not started' },
-     
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],  
     created_at: { type: Date, default: Date.now },  
     updated_at: { type: Date, default: Date.now },
