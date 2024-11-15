@@ -1,16 +1,5 @@
 const express = require("express");
-const {  logout,
-    updateUser,
-    welcome,
-    registerUser,
-    //verifyOTPAndRegister,
-    loginUser,
-    deleteUser,
-    verifyOtp,
-    getAllUsers,
-    getUserById, 
-    //resendOTP,
-     } = require("../controllers/userCtrl");
+const { logout, updateUser, welcome, registerUser, loginUser, deleteUser, verifyOtp, getAllUsers, getUserById, resendOtp } = require("../controllers/userCtrl");
 const { validateLogin, 
     //validateRegistration 
     } = require("../middleware/validations");
@@ -31,8 +20,9 @@ router.post("/register", registerUser);
 
 //verify Otp
 router.post("/verifyOtp", verifyOtp );
+
 //resend OTP
-//router.post('/resendOtp', resendOTP)
+router.post('/resend-otp', resendOtp);
 
 // find user by Id
 router.get("/user/:id", validateToken, getUserById);
