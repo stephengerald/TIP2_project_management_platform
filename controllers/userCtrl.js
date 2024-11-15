@@ -183,70 +183,7 @@ const updateUser = async (req, res) => {
     }  
 };  
 */
-const loginUser = async (req, res) => {  
-    const { email, password } = req.body;  
 
-    const user = await User.findOne({ email });  
-    if (!user) {  
-        return res.status(400).json({ message: 'Invalid credentials' });  
-    }  
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);  
-    if (!isPasswordValid) {  
-        return res.status(400).json({ message: 'Invalid credentials' });  
-    }  
-
-    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });  
-    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: '7d' });  
-
-    return res.status(200).json({ message: "Successful", access_token: accessToken, refresh_token: refreshToken });  
-};
-
-// DELETE request to delete a user by ID  
-//app.delete('/user/:id', 
-const deleteUser = async (req, res) => {  
-    const userId = req.params.id;  // Get the user ID from the URL parameters  
-
-    try {  
-        // Find and delete the user  
-        const user = await User.findByIdAndDelete(userId);  
-        
-        if (!user) {  
-            return res.status(404).json({ message: 'User not found' });  
-        }  
-
-        res.status(200).json({ message: 'User deleted successfully' });  
-    } catch (error) {  
-        console.error(`Delete user error: ${error.message}`);  
-        res.status(500).json({ message: 'Internal server error' });  
-    }  
-};  
-
-// An array to store blacklisted refresh tokens   
-let refreshTokenBlacklist = [];   
-
-const logout = async (req, res) => {  
-    const { refreshToken } = req.body;  
-
-    try {  
-        // Check if the refresh token is provided  
-        if (!refreshToken) {  
-            return res.status(400).json({ message: 'Refresh token is required' });  
-        }  
-
-        // Invalidate the refresh token by adding it to the blacklist  
-        refreshTokenBlacklist.push(refreshToken);  
-
-        //  remove the refresh token from the database 
-
-        // Respond with a success message  
-        return res.status(200).json({ message: 'Logged out successfully' });  
-    } catch (error) {  
-        // Handle unexpected errors  
-        console.error(`Logout error: ${error.message}`);  
-        return res.status(500).json({ message: 'Internal Server Error' });  
-    }  
-};
 /*
 module.exports = {  
         //registerUser,  
@@ -338,10 +275,70 @@ module.exports = {
 // });  
 
 
+const loginUser = async (req, res) => {  
+    const { email, password } = req.body;  
 
+    const user = await User.findOne({ email });  
+    if (!user) {  
+        return res.status(400).json({ message: 'Invalid credentials' });  
+    }  
 
+    const isPasswordValid = await bcrypt.compare(password, user.password);  
+    if (!isPasswordValid) {  
+        return res.status(400).json({ message: 'Invalid credentials' });  
+    }  
 
+    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });  
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: '7d' });  
 
+    return res.status(200).json({ message: "Successful", access_token: accessToken, refresh_token: refreshToken });  
+};
+
+// DELETE request to delete a user by ID  
+//app.delete('/user/:id', 
+const deleteUser = async (req, res) => {  
+    const userId = req.params.id;  // Get the user ID from the URL parameters  
+
+    try {  
+        // Find and delete the user  
+        const user = await User.findByIdAndDelete(userId);  
+        
+        if (!user) {  
+            return res.status(404).json({ message: 'User not found' });  
+        }  
+
+        res.status(200).json({ message: 'User deleted successfully' });  
+    } catch (error) {  
+        console.error(`Delete user error: ${error.message}`);  
+        res.status(500).json({ message: 'Internal server error' });  
+    }  
+};  
+
+// An array to store blacklisted refresh tokens   
+let refreshTokenBlacklist = [];   
+
+const logout = async (req, res) => {  
+    const { refreshToken } = req.body;  
+
+    try {  
+        // Check if the refresh token is provided  
+        if (!refreshToken) {  
+            return res.status(400).json({ message: 'Refresh token is required' });  
+        }  
+
+        // Invalidate the refresh token by adding it to the blacklist  
+        refreshTokenBlacklist.push(refreshToken);  
+
+        //  remove the refresh token from the database 
+
+        // Respond with a success message  
+        return res.status(200).json({ message: 'Logged out successfully' });  
+    } catch (error) {  
+        // Handle unexpected errors  
+        console.error(`Logout error: ${error.message}`);  
+        return res.status(500).json({ message: 'Internal Server Error' });  
+    }  
+};
 
 const registerUser = async (req, res) => {
     const { fullname, email, password } = req.body;

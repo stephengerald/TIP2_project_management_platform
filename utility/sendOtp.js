@@ -21,11 +21,18 @@ const sendOtp = async (user) => {
         from: process.env.EMAIL,
         to: user.email,
         subject: 'Confirmation Code',  
-        text: `Your OTP is ${otp}. It expires in 5 minutes`
+        html: `<html>  
+        <body>  
+            <h2>Your new OTP is <span style="color: blue; font-weight: bold;">${otp}</span>.</h2>  
+            <p>It expires in 5 minutes.</p>  
+        </body>  
+    </html>` 
     };
 
     await transporter.sendMail(mailOptions);
-    console.log('OTP sent successfully');
+    console.log(`OTP has been sent to ${email}`);
 };
 
 module.exports = sendOtp;
+
+

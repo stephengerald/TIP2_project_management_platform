@@ -2,113 +2,137 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../models/project');
 
-//create a project
+// Create a new project  
 const newProject =  async (req, res) => {  
-  const { name, description, tasks, status, isAvailable } = req.body;  
+  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;  
 
-  // Validate required fields  
-  if (!name) {  
-    return res.status(400).json({ msg: "Project name is required" });  
-  }  
-  if(!description){
-    return res.status(400).json({msg: "Please add project description"})
+  if (!projectTitle){
+    return res.status(400).json({message: ' Please add project Title'})
   }
-  if (!task){
-    return res.status(400).json({msg: "Please input Task ID"})
+  if(!projectType){
+    return res.status(400).json({message: ' Project type is not included'})
   }
-
+  if(!projectDescription){
+    return res.status(400).json({message: ' Please add the description of this project'})
+  }
+  if(!startDate){
+    return res.status(400).json({message: ' Please add your starting date'})
+  }
+  if(!endDate){
+    return res.status(400).json({message: ' Input your Project End time target'})
+  }
+  if(!projectRoles){
+    return res.status(400).json({message: ' ProjectRole is not included'})
+  }
   try {  
-    const project = new Project({ name, description, tasks, status, isAvailable });  
-    await project.save();  
-    return res.status(201).json(project);  
-  } catch (err) {  
-    return res.status(500).json({ msg: "Error creating project", error: err.message });  
+      const newProject = new Project({  
+          projectTitle,  
+          projectType,  
+          projectDescription,  
+          startDate,  
+          endDate,  
+          projectRoles,  
+      });  
+
+      await newProject.save();  
+      res.status(201).json(newProject);  
+  } catch (error) {  
+      res.status(400).json({ message: error.message });  
+  }  
+};  
+
+// Get all projects  
+const getAllProject= async (req, res) => {  
+  try {  
+      const projects = await Project.find().populate('assignedTo'); 
+      res.json(projects);  
+  } catch (error) {  
+      res.status(500).json({ message: error.message });  
   }  
 };  
 
 // Get a project by ID  
+ 
 const getProjectById = async (req, res) => {  
   try {  
-      const project = await Project.findById(req.params.id).populate('tasks').populate('milestones');; 
+      const project = await Project.findById(req.params.id);  
       if (!project) {  
-          return res.status(404).json({ msg: "Project not found" });  
+          return res.status(404).json({ message: 'Project not found' });  
       }  
-      return res.status(200).json(project);  
-  } catch (err) {  
-      return res.status(500).json({ msg: "Error fetching project", error: err.message });  
+      res.json(project);  
+  } catch (error) {  
+      res.status(500).json({ message: error.message });  
   }  
-};
+};  
 
-// Update a project by ID  
+// Update a project   
 const updateProject = async (req, res) => {  
-  const { name, description, tasks, status, isAvailable } = req.body;  
-
-  // Validate required fields  
-  if (!name) {  
-      return res.status(400).json({ msg: "Project name is required" });  
-  }  
-  if (!description) {  
-      return res.status(400).json({ msg: "Please add project description" });  
-  }  
+  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;  
 
   try {  
-      const project = await Project.findByIdAndUpdate(  
+      const updatedProject = await Project.findByIdAndUpdate(  
           req.params.id,  
-          { name, description, tasks, status, isAvailable },  
-          { new: true } // Return the updated document  
+          {  
+              projectTitle,  
+              projectType,  
+              projectDescription,  
+              startDate,  
+              endDate,  
+              projectRoles,  
+          },  
+          { new: true }  
       );  
 
-      if (!project) {  
-          return res.status(404).json({ msg: "Project not found" });  
+      if (!updatedProject) {  
+          return res.status(404).json({ message: 'Project not found' });  
       }  
-
-      return res.status(200).json(project);  
-  } catch (err) {  
-      return res.status(500).json({ msg: "Error updating project", error: err.message });  
+      res.json(updatedProject);  
+  } catch (error) {  
+      res.status(400).json({ message: error.message });  
   }  
-};
+};  
 
-// Delete a project by ID  
-const deleteProject = async (req, res) => {  
+// Delete a project   
+const deleteProject =async (req, res) => {  
   try {  
-      const project = await Project.findByIdAndDelete(req.params.id);  
-
-      if (!project) {  
-          return res.status(404).json({ msg: "Project not found" });  
+      const deletedProject = await Project.findByIdAndDelete(req.params.id);  
+      if (!deletedProject) {  
+          return res.status(404).json({ message: 'Project not found' });  
       }  
-
-      return res.status(204).send(); // No content response  
-  } catch (err) {  
-      return res.status(500).json({ msg: "Error deleting project", error: err.message });  
+      res.json({ message: 'Project deleted successfully' });  
+  } catch (error) {  
+      res.status(500).json({ message: error.message });  
   }  
-};
+};  
 
 // Search projects  
 const searchProjects = async (req, res) => {  
-  const { name, status } = req.query; // Destructure the query parameters  
+  const { projectTitle, projectType } = req.query;  
 
-  // Create an object to hold the search criteria  
-  const searchConditions = {};  
+  const query = {};  
 
-  // Check and add search criteria based on provided query parameters  
-  if (name) {  
-      searchConditions.name = new RegExp(name, 'i'); // Case-insensitive search  
+  // Build the search query based on provided parameters  
+  if (projectTitle) {  
+      query.projectTitle = { $regex: projectTitle, $options: 'i' }; // i is Case-insensitive search, while regex is regular expression
   }  
-  if (status) {  
-      searchConditions.status = status; // validate status value  
+  if (projectType) {  
+      query.projectType = projectType;  
   }  
 
   try {  
-      const projects = await Project.find(searchConditions).populate('tasks'); 
-      return res.status(200).json(projects);  
-  } catch (err) {  
-      return res.status(500).json({ msg: "Error searching projects", error: err.message });  
+      const projects = await Project.find(query);  
+      res.json(projects);  
+  } catch (error) {  
+      res.status(500).json({ message: error.message });  
   }  
-};
+}; 
+
+
 
 
 module.exports = {
     getProjectById,
+    getAllProject,
     newProject,
     updateProject,
     deleteProject,
