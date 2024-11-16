@@ -28,7 +28,7 @@ router.post('/resend-otp', resendOtp);
 router.get("/user/:id", validateToken, getUserById);
 
 // Get all users
-router.get("/all-users", validateToken, getAllUsers );
+router.get("/allusers", validateToken, getAllUsers);
 
 //Update user
 router.put("/update-user/:id", validateToken, updateUser);
