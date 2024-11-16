@@ -22,7 +22,7 @@ const newProject =  async (req, res) => {
     return res.status(400).json({message: ' Input your Project End time target'})
   }
   if(!projectRoles){
-    return res.status(400).json({message: ' ProjectRole is not included'})
+    return res.status(400).json({message: ' Project Role is not included'})
   }
   try {  
       const newProject = new Project({  
