@@ -127,22 +127,35 @@ const verifyOTP = async (req, res) => {
 const completeRegistration = async (req, res) => {  
     const { email, fullname, password } = req.body;  
 
-    const user = await User.findOne({ email });  
-    if (user) {  
-        return res.status(400).json({ message: 'User already exist' });  
+    try {  
+        // Check if the user already exists  
+        const existingUser = await User.findOne({ email });  
+        if (existingUser) {  
+            return res.status(400).json({ message: 'User already exists' });  
+        }  
+
+        // Hash the user's password  
+        const hashedPassword = await bcrypt.hash(password, 10);  
+
+        // Create a new user instance  
+        const newUser = new User({  
+            email,  
+            fullname,  
+            password: hashedPassword  
+        });  
+
+        // Save the new user  
+        await newUser.save();  
+
+        // Create access and refresh tokens  
+        const accessToken = jwt.sign({ id: newUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });  
+        const refreshToken = jwt.sign({ id: newUser._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });  
+
+        res.status(201).json({ accessToken, refreshToken });  
+    } catch (error) {  
+        console.error('Registration error:', error);  
+        res.status(500).json({ message: 'Server error' });  
     }  
-
-    // Hash the user's password  
-    const hashedPassword = await bcrypt.hash(password, 10);  
-    user.fullname = fullname;  
-    user.password = hashedPassword;  
-
-    await user.save();  
-
-    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });  
-    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN, { expiresIn: '7d' });  
-
-    res.status(201).json({ accessToken, refreshToken });  
 };  
 */
 /*
@@ -237,6 +250,7 @@ const logout = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });  
     }  
 };
+
 /*
 module.exports = {  
         //registerUser,  
@@ -327,12 +341,6 @@ module.exports = {
 //     res.redirect('/'); // Change to your route  
 // });  
 
-
-
-
-
-
-
 const registerUser = async (req, res) => {
     const { fullname, email, password } = req.body;
 
@@ -356,7 +364,7 @@ const registerUser = async (req, res) => {
         await user.save();
         await sendOtp(user);
 
-        return res.status(201).json({ message: 'Registration successful, OTP sent to your email' });
+        return res.status(201).json({ message: `Registration successful, OTP sent to your ${email}` });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
