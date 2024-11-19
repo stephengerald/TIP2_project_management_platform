@@ -35,9 +35,6 @@ const io = new Server(server, {
     }
 });
 
-
-
-//const Users = require('./models/User');
 //const sendUserEmail = require('./sendEmail'); 
 
 /*
@@ -66,7 +63,7 @@ projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
 projectPlatform.use("/api", forumRoutes);
 projectPlatform.use("/api", threadRoutes);
-//projectPlatform.use("/api", TaskRouter)
+projectPlatform.use("/api", TaskRouter)
 
 // Socket.io setup 
 io.on("connection", (socket) => {

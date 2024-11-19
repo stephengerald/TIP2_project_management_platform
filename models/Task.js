@@ -23,10 +23,6 @@ const taskSchema = new mongoose.Schema({
     total_time: { type: Number, default: 0 } // Total time spent in minutes  
 });  
 
-// Update the updated_at field before saving  
-taskSchema.pre('save', function(next) {  
-    this.updated_at = Date.now();  
-    next();  
-});  
-
 const Task = mongoose.model('Task', taskSchema); 
+
+module.exports = Task;

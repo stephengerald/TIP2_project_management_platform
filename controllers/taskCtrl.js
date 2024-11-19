@@ -1,6 +1,7 @@
 const mongoose = require ("mongoose")
-
+const Comment = require('../models/commentModel');
 const Task = require("../models/Task");
+
 //const { startTimeTracking } = require("./timeTracking");
 
 
@@ -44,16 +45,28 @@ const newTask = async (req, res) => {
     // Return validation errors if any  
     if (errors.length > 0) {  
         return res.status(400).json({ message: "Validation errors", errors });  
-    }  
+    }
 
     try {  
         const task = new Task(req.body);  
+
+        // Create Comment documents and link them to the task
+        const commentDocs = await Promise.all(comments.map(async (commentContent) => {
+            const comment = new Comment({ content: commentContent, user_id: req.user._id, task_id: task._id });
+            await comment.save();
+            return comment._id;
+        }));
+
+        task.comments = commentDocs;
 
         // Start time tracking  
         const startTime = new Date();  
         task.time_tracking.push({ start_time: startTime });  
 
-        await task.save();  
+        await task.save();
+
+        // Update comments with task_id
+        await Comment.updateMany({ _id: { $in: commentDocs } }, { task_id: task._id });
 
         // Count the total number of tasks  
         const count = await Task.countDocuments();  
