@@ -28,13 +28,13 @@ router.post('/resend-otp', resendOtp);
 router.get("/user/:id", validateToken, getUserById);
 
 // Get all users
-router.get("/allusers", validateToken, getAllUsers);
+router.get("/allusers",  getAllUsers);
 
 //Update user
 router.put("/update-user/:id", validateToken, updateUser);
 
 //delete user
-router.delete("/delete-users/:id", validateToken, deleteUser);
+router.delete("/delete-users/:id", deleteUser);
 
 
 module.exports = router;

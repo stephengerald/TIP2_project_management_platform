@@ -30,7 +30,7 @@ const sendOtp = async (user) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`OTP has been sent to ${email}`);
+    console.log(`OTP has been sent to ${user.email}`);
 };
 
 module.exports = sendOtp;

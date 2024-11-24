@@ -364,7 +364,7 @@ const registerUser = async (req, res) => {
         await user.save();
         await sendOtp(user);
 
-        return res.status(201).json({ message: `Registration successful, OTP sent to your ${email}` });
+        return res.status(201).json({ message: `Registration successful, OTP have been sent to ${email}` });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
