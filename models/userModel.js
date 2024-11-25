@@ -22,6 +22,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     fullname: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    role: { type: String, enum: ['Product Manager', 'Team Lead', 'Data Analyst', 'UI/UX Designer'], required: true },
     password: { type: String, required: true },
     otp: { type: String },
     otpExpiration: { type: Date },
