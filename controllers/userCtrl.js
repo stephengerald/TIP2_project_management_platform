@@ -23,36 +23,39 @@ const welcome = async(req, res) => {
     }
 };
 
-const registerUser = async (req, res) => {
-    const { fullname, email, password, role } = req.body;
+const registerUser = async (req, res) => {  
+    const { fullname, email, password, role } = req.body; // Include role in the request body  
 
-    console.log("Request body:", req.body);
+    try {  
+        const userExists = await User.findOne({ email });  
 
-    try {
-        const userExists = await User.findOne({ email });
+        if (userExists) {  
+            return res.status(400).json({ message: 'User already exists' });  
+        }  
 
-        if (userExists) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+        // Check if the role is valid   
+        if (role && role !== 'user' && role !== 'admin') {  
+            return res.status(400).json({ message: 'Invalid role' });  
+        }  
 
-         // Hash the user's password  
+        // Hash the user's password  
         const hashedPassword = await bcrypt.hash(password, 10);  
 
-        // Create the user object
-        const user = new User({
-            fullname,
-            email,
-            password: hashedPassword,
-            role
-        });
+        // Create the user object  
+        const user = new User({  
+            fullname,  
+            email,  
+            password: hashedPassword,  
+            role: role || 'user', // default to 'user'  
+        });  
 
-        await user.save();
-        await sendOtp(user);
+        await user.save();  
+        await sendOtp(user);  
 
-        return res.status(201).json({ message: 'Registration successful, OTP sent to your email' });
-    } catch (error) {
-        return res.status(400).json({ message: error.message });
-    }
+        return res.status(201).json({ message: `Registration successful, OTP has been sent to ${email}` });  
+    } catch (error) {  
+        return res.status(400).json({ message: error.message });  
+    }  
 };
 
 const verifyOtp = async (req, res) => {

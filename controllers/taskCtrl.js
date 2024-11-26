@@ -1,6 +1,8 @@
 const mongoose = require ("mongoose")
 const Comment = require('../models/commentModel');
 const Task = require("../models/Task");
+const { validEmail } = require("../middleware/validations");
+const User = require("../models/userModel");
 
 //const { startTimeTracking } = require("./timeTracking");
 
@@ -26,7 +28,6 @@ const newTask = async (req, res) => {
     if(!end_date){
         errors.push('Please input the end date')
     }
-
 
     if (!Array.isArray(comments) || comments.length === 0) {  
         errors.push("At least one comment is required.");  
@@ -81,7 +82,6 @@ const newTask = async (req, res) => {
         return res.status(500).json({ message: "Internal server error." });  
     }  
 };  
-
 
 const getTasks = async (req, res) => {  
     try {  
