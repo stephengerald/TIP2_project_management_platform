@@ -1,44 +1,36 @@
-const jwt = require("jsonwebtoken")
-const bcrypt = require("bcryptjs")
-const Project = require("../models/project")
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const Project = require("../models/project");
 
-
-
-
-
-const validateProjectAdmin =  (accessToken)=>{
-    //check if the user is loged in
-    return async (req, res, next) =>{
-        const accessToken = req.cookies.accessToken
-        if (!accessToken) {
-            res.status(401).json({
-              message: 'Access Denied! please login first!.'
-            });
-            // check if the accessToken is valid
-          } else {
-            const decoded = await jwt.verify(accessToken, process.env.ACCESS_TOKEN, function (error, payload) {
-              if (error) {
-                res.status(401).json({
-                  message: 'Invalid Token'
-                });
-                //check if the user ia an admin
-              } else {
-                if (payload.role.includes('Admin' || 'admin')) {
-                  next();
-                } else {
-                  res.status(403).json({
-                    message: 'You are not Authorisez!.'
-                  })
-                }
-              }
-            
-            });
-          };
-        
+const validateProjectAdmin = () => {
+  // Middleware to check if the user is logged in and an admin
+  return async (req, res, next) => {
+    const accessToken = req.cookies.accessToken;
+    if (!accessToken) {
+      return res.status(401).json({
+        message: 'Access Denied! Please login first!'
+      });
     }
 
+    try {
+      // Verify the token
+      const decoded = await jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+      // Check if the user is an admin
+      if (decoded.role.includes('Admin') || decoded.role.includes('admin')) {
+        next();
+      } else {
+        return res.status(403).json({
+          message: 'You are not authorized!'
+        });
+      }
+    } catch (error) {
+      return res.status(401).json({
+        message: 'Invalid Token'
+      });
+    }
+  }
 }
 
-module.exports ={
-    validateProjectAdmin
-}
+module.exports = {
+  validateProjectAdmin
+};
