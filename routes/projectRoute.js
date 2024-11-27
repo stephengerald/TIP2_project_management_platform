@@ -1,6 +1,5 @@
 const express = require("express")
 const {newProject,updateProject, deleteProject, getProjectById, searchProjects, getAllProject} = require("../controllers/projectCtrl")
-const {validateProjectAdmin} = require("../middleware/validProject");
 const requireAdmin = require("../middleware/adminRoles");
 const validateToken = require("../middleware/validateAuth");
 
@@ -17,13 +16,13 @@ router.get("/getAllProjects/:id", getAllProject,)
 router.post("/newProject", validateToken, requireAdmin, newProject)
 
 //find project and update by Id
-router.put("/updateProject/:id", validateProjectAdmin, updateProject);
+router.put("/updateProject/:id", validateToken, updateProject);
 
 // find project and delete by Id
-router.delete("/deleteProject/:id", validateProjectAdmin, deleteProject);
+router.delete("/deleteProject/:id", validateToken, deleteProject);
 
 //search to get all available project
-router.get("/searchProject", searchProjects)
+router.get("/searchProject", validateToken, searchProjects)
 
 
 
