@@ -10,7 +10,7 @@ const router = express.Router()
 // to get a project by Id
 router.get("/getProject/:id", getProjectById);
 
-router.get("/getAllProjects/:id", getAllProject,)
+router.get("/getAllProjects", getAllProject,)
 
 //create a new project
 router.post("/newProject", validateToken, requireAdmin, newProject)
