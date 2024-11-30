@@ -9,7 +9,7 @@ const taskSchema = new mongoose.Schema({
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },   
     start_date: { type: Date, required: true },  
     end_date: { type: Date },  
-    //comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],  
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],  
     created_at: { type: Date, default: Date.now },  
     updated_at: { type: Date, default: Date.now },  
     //project_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },   
@@ -26,6 +26,12 @@ const taskSchema = new mongoose.Schema({
         default: 'pending' // Default status  
     }  
 });  
+
+// Update the updated_at field before saving 
+taskSchema.pre('save', function (next) { 
+    this.updated_at = Date.now(); 
+    next(); 
+});
 
 const Task = mongoose.model('Task', taskSchema);   
 

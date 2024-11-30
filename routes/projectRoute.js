@@ -8,18 +8,18 @@ const router = express.Router()
 
 
 // to get a project by Id
-router.get("/getProject/:id", getProjectById);
+router.get("/getProject/:id", validateToken, getProjectById);
 
-router.get("/getAllProjects", getAllProject,)
+router.get("/getAllProjects", validateToken, getAllProject,)
 
 //create a new project
 router.post("/newProject", validateToken, requireAdmin, newProject)
 
 //find project and update by Id
-router.put("/updateProject/:id", validateToken, updateProject);
+router.put("/updateProject/:id", validateToken, requireAdmin, updateProject);
 
 // find project and delete by Id
-router.delete("/deleteProject/:id", validateToken, deleteProject);
+router.delete("/deleteProject/:id", validateToken, requireAdmin, deleteProject);
 
 //search to get all available project
 router.get("/searchProject", validateToken, searchProjects)
