@@ -1,6 +1,6 @@
 const express = require("express");
 const { logout, updateUser, welcome, registerUser, loginUser, deleteUser, verifyOtp, getAllUsers, getUserById, resendOtp } = require("../controllers/userCtrl");
-const { validateLogin, 
+const { validateLogin, validateRegistration, 
     //validateRegistration 
     } = require("../middleware/validations");
 const validateToken = require("../middleware/validateAuth");
@@ -16,7 +16,7 @@ router.post("/login", validateLogin, loginUser);
 router.post("/logout", logout);
 
 //user registration router
-router.post("/register", registerUser);
+router.post("/register", validateRegistration, registerUser);
 
 //verify Otp
 router.post("/verifyOtp", verifyOtp );

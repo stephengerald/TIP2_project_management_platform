@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../models/project');
+const User = require("../models/userModel")
 
 // Create a new project  
 const newProject =  async (req, res) => {  
-  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;  
+  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;
+  
+  console.log(req.body); // Log request body to verify data is received
 
   if (!projectTitle){
     return res.status(400).json({message: ' Please add project Title'})
@@ -35,9 +38,9 @@ const newProject =  async (req, res) => {
       });  
 
       await newProject.save();  
-      res.status(201).json(newProject);  
+      return res.status(201).json(newProject);  
   } catch (error) {  
-      res.status(400).json({ message: error.message });  
+      return res.status(400).json({ message: error.message });  
   }  
 };  
 
@@ -95,7 +98,8 @@ const updateProject = async (req, res) => {
 // Delete a project   
 const deleteProject =async (req, res) => {  
   try {  
-      const deletedProject = await Project.findByIdAndDelete(req.params.id);  
+      const deletedProject = await Project.findByIdAndDelete(req.params.id);
+
       if (!deletedProject) {  
           return res.status(404).json({ message: 'Project not found' });  
       }  

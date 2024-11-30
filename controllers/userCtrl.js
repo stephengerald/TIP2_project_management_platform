@@ -23,13 +23,8 @@ const welcome = async(req, res) => {
     }
 };
 
-// in your controller file
-/* 
-const generateOTP = () => {  
-    return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP  
-};  
-//endpoint to register user with email first
 const registerUser = async (req, res) => {  
+    const { fullname, email, password, role } = req.body; // Include role in the request body  
     const { email } = req.body;  
 
     // Check if an OTP has already been sent  
@@ -346,7 +341,17 @@ const registerUser = async (req, res) => {
 
     try {  
         const userExists = await User.findOne({ email });  
+    try {  
+        const userExists = await User.findOne({ email });  
 
+        if (userExists) {  
+            return res.status(400).json({ message: 'User already exists' });  
+        }  
+
+        // Check if the role is valid   
+        if (role && role !== 'user' && role !== 'admin') {  
+            return res.status(400).json({ message: 'Invalid role' });  
+        }  
         if (userExists) {  
             return res.status(400).json({ message: 'User already exists' });  
         }  
@@ -357,8 +362,16 @@ const registerUser = async (req, res) => {
         }  
 
         // Hash the user's password  
+        // Hash the user's password  
         const hashedPassword = await bcrypt.hash(password, 10);  
 
+        // Create the user object  
+        const user = new User({  
+            fullname,  
+            email,  
+            password: hashedPassword,  
+            role: role || 'user', // default to 'user'  
+        });  
         // Create the user object  
         const user = new User({  
             fullname,  
@@ -369,7 +382,13 @@ const registerUser = async (req, res) => {
 
         await user.save();  
         await sendOtp(user);  
+        await user.save();  
+        await sendOtp(user);  
 
+        return res.status(201).json({ message: `Registration successful, OTP has been sent to ${email}` });  
+    } catch (error) {  
+        return res.status(400).json({ message: error.message });  
+    }  
         return res.status(201).json({ message: `Registration successful, OTP has been sent to ${email}` });  
     } catch (error) {  
         return res.status(400).json({ message: error.message });  
@@ -424,7 +443,7 @@ const resendOtp = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password, role } = req.body;
 
     try {
         // Find user by email
@@ -483,8 +502,70 @@ const getUserById = async (req, res) => {
 };
 
 
+const loginUser = async (req, res) => {  
+    const { email, password } = req.body;  
 
+    const user = await User.findOne({ email });  
+    if (!user) {  
+        return res.status(400).json({ message: 'Invalid credentials' });  
+    }  
 
+    const isPasswordValid = await bcrypt.compare(password, user.password);  
+    if (!isPasswordValid) {  
+        return res.status(400).json({ message: 'Invalid credentials' });  
+    }  
+
+    const accessToken = generateAccessToken(user)  
+    const refreshToken = generateRefreshToken(user);  
+
+    return res.status(200).json({ message: "Successful", access_token: accessToken, refresh_token: refreshToken });  
+};
+
+// DELETE request to delete a user by ID  
+//app.delete('/user/:id', 
+const deleteUser = async (req, res) => {  
+    const userId = req.params.id;  // Get the user ID from the URL parameters  
+
+    try {  
+        // Find and delete the user  
+        const user = await User.findByIdAndDelete(userId);  
+        
+        if (!user) {  
+            return res.status(404).json({ message: 'User not found' });  
+        }  
+
+        res.status(200).json({ message: 'User deleted successfully' });  
+    } catch (error) {  
+        console.error(`Delete user error: ${error.message}`);  
+        res.status(500).json({ message: 'Internal server error' });  
+    }  
+};  
+
+// An array to store blacklisted refresh tokens   
+let refreshTokenBlacklist = [];   
+
+const logout = async (req, res) => {  
+    const { refreshToken } = req.body;  
+
+    try {  
+        // Check if the refresh token is provided  
+        if (!refreshToken) {  
+            return res.status(400).json({ message: 'Refresh token is required' });  
+        }  
+
+        // Invalidate the refresh token by adding it to the blacklist  
+        refreshTokenBlacklist.push(refreshToken);  
+
+        //  remove the refresh token from the database 
+
+        // Respond with a success message  
+        return res.status(200).json({ message: 'Logged out successfully' });  
+    } catch (error) {  
+        // Handle unexpected errors  
+        console.error(`Logout error: ${error.message}`);  
+        return res.status(500).json({ message: 'Internal Server Error' });  
+    }  
+};
 
 module.exports = {
     registerUser,

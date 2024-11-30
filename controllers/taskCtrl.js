@@ -9,7 +9,8 @@ const User = require("../models/userModel");
 
 const newTask = async (req, res) => {  
     // Input validation  
-    const { title, type, description, start_date, end_date,  assigned_to, priority, status, comments } = req.body;  
+    const { title, type, description, start_date, end_date,  assigned_to, priority, status, comments } = req.body;
+
     const errors = [];  
 
     // Validate required fields  
