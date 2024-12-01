@@ -1,122 +1,98 @@
-const mongoose = require ('mongoose');
-
 const Comment = require('../models/commentModel');
+const Task = require('../models/taskModel');
 
+// Create a new comment
+const createComment = async (req, res) => {
+    const { text, taskId } = req.body;
 
+    if (!text) {
+        return res.status(400).json({ message: "Comment text is required." });
+    }
 
-const createComt = async (req, res) => {  
-    try {  
-        const { content } = req.body; // Destructure content from request body  
-        const { taskId } = req.params; // Get taskId from route parameters  
+    try {
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
 
-        // Validate input  
-        if (!content) {  
-            return res.status(400).json({ message: "Comment content is required." });  
-        }  
+        const comment = new Comment({
+            text,
+            author: req.user._id,
+            task: task._id
+        });
 
-        // Find the task to ensure it exists  
-        const task = await Task.findById(taskId);  
-        if (!task) {  
-            return res.status(404).json({ message: "Task not found." });  
-        }  
+        await comment.save();
 
-        // Create and save the comment  
-        const comment = new Comment({ content, task_id: taskId, user_id: req.user._id }); // Ensure user_id is set correctly  
-        await Comment.save();  
+        task.comments.push(comment._id);
+        await task.save();
 
-        // Update the task to include the new comment ID  
-        await Task.findByIdAndUpdate(taskId, { $push: { comments: comment._id } });  
+        return res.status(201).json({ message: 'Comment created successfully', comment });
+    } catch (error) {
+        console.error("Error creating comment:", error);
+        return res.status(500).json({ message: "Internal server error.", error: error.message });
+    }
+};
 
-        return res.status(201).json(comment); // Return the created comment  
-    } catch (error) {  
-        console.error(error); // Log the error for debugging  
-        return res.status(500).json({ message: "Internal server error." }); // General server error response  
-    }  
-}
+// Get comments for a task
+const getComments = async (req, res) => {
+    const { taskId } = req.params;
 
-const getComt = async (req, res) => {  
-    try {  
-        const taskId = req.params.taskId; // Get taskId from route parameters  
+    try {
+        const comments = await Comment.find({ task: taskId }).populate('author', 'fullname email');
+        return res.status(200).json({ comments });
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        return res.status(500).json({ message: "Internal server error.", error: error.message });
+    }
+};
 
-        // Fetch comments associated with the task and populate user details  
-        const comments = await Comment.find({ task_id: taskId })  
-                                       .populate('user_id', 'username email') // Populate user details (username and email)  
-                                       .populate('task_id', 'title description'); 
+// Update a comment
+const updateComment = async (req, res) => {
+    const { id } = req.params;
+    const { text } = req.body;
 
-        // If no comments found, return an empty array  
-        if (!comments.length) {  
-            return res.status(200).json([]);  
-        }  
+    if (!text) {
+        return res.status(400).json({ message: "Comment text is required." });
+    }
 
-        // Respond with the populated comments  
-        return res.status(200).json(comments);  
-    } catch (error) {  
-        console.error(error); 
-        return res.status(500).json({ message: "Internal server error." }); // Handle server errors  
-    }  
-}
+    try {
+        const comment = await Comment.findByIdAndUpdate(id, { text }, { new: true });
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+        return res.status(200).json({ message: 'Comment updated successfully', comment });
+    } catch (error) {
+        console.error("Error updating comment:", error);
+        return res.status(500).json({ message: "Internal server error.", error: error.message });
+    }
+};
 
-const updateComt = async (req, res) => {  
-    try {  
-        const commentId = req.params.commentId; // Get commentId from route parameters  
-        const { content } = req.body; // Destructure content from the request body  
+// Delete a comment
+const deleteComment = async (req, res) => {
+    const { id } = req.params;
 
-        // Check if content is provided  
-        if (!content) {  
-            return res.status(400).json({ message: "Comment content is required." });  
-        }  
+    try {
+        const comment = await Comment.findByIdAndDelete(id);
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
 
-        // Find the comment by ID  
-        const comment = await Comment.findById(commentId);  
-        
-        // Check if the comment exists  
-        if (!comment) {  
-            return res.status(404).json({ message: "Comment not found." });  
-        }  
+        const task = await Task.findById(comment.task);
+        if (task) {
+            task.comments.pull(comment._id);
+            await task.save();
+        }
 
-        // Update the comment  
-        comment.content = content; // Update the content of the comment  
-        await comment.save(); // Save the updated comment to the database  
-
-        // Respond with the updated comment  
-        return res.status(200).json(comment);  
-    } catch (error) {  
-        console.error(error); // Log the error for debugging  
-        return res.status(500).json({ message: "Internal server error." }); // Handle server errors  
-    }  
-}
-
-const deleteComt = async (req, res) => {  
-    try {  
-        const commentId = req.params.commentId; // Get commentId from route parameters  
-
-        // Find the comment by ID  
-        const comment = await Comment.findById(commentId);  
-        
-        // Check if the comment exists  
-        if (!comment) {  
-            return res.status(404).json({ message: "Comment not found." });  
-        }  
-
-        // Delete the comment  
-        const deletedComment = await Comment.findByIdAndDelete(commentId); // remove from the database 
-        
-        // Check if the deletion was successful  
-        if (!deletedComment) {  
-            return res.status(400).json({ message: "Unsuccessful deletion." });  
-        }  
-
-        // Respond with a success message  
-        return res.status(200).json({ message: "Comment deleted successfully." });  
-    } catch (error) {  
-        console.error(error); // Log the error for debugging  
-        return res.status(500).json({ message: "Internal server error." }); // Handle server errors  
-    }  
-}
+        return res.status(200).json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+        console.error("Error deleting comment:", error);
+        return res.status(500).json({ message: "Internal server error.", error: error.message });
+    }
+};
 
 module.exports = {
-    createComt,
-    getComt,
-    updateComt,
-    deleteComt
-}
+    createComment,
+    getComments,
+    updateComment,
+    deleteComment
+};

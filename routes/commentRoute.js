@@ -1,17 +1,18 @@
-const express = require('express')
-const { createComt, getComt, updateComt, deleteComt } = require("../controllers/commentCtrl");
+const express = require('express');
+const { createComment, getComments, updateComment } = require('../controllers/commentCtrl');
+
 
 
 
 const router = express.Router()
 
 // Create a comment for a specific task 
-router.post('/:taskId/comments',createComt);
+router.post('/createcomments',createComment);
 // Get comments for a task 
-router.get('/:taskId/comments',getComt);
-// Route: PUT /comments/:commentId 
-router.put('/:commentId',updateComt);
-// Route: DELETE /comments/:commentId 
-router.delete('/:commentId', deleteComt);
+router.get('/getcomments',getComments);
+// Route: updatecomments/
+router.put('/updatecomment/:id',updateComment);
+// Route: deletecomments
+router.delete('/deletecomment/:id', deleteComt);
 
 module.exports = router
