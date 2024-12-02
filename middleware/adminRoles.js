@@ -1,18 +1,4 @@
 //roleMiddleware
-const validateToken = require('./validateAuth');  
-
-const requireAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
-        next();
-    } else {
-        return res.status(403).json({ message: 'Access denied. Admins only.' });
-    }
-};
-
-module.exports = requireAdmin;
-
-//roleMiddleware
-
 //const validateToken = require('../middleware/validateAuth');  
 
 const requireAdminRole = async (req, res, next) => {  
@@ -29,8 +15,7 @@ const requireAdminRole = async (req, res, next) => {
 
         next(); // Proceed to the next middleware or route handler  
 
-    } catch (error) {  
-        // You might want to differentiate between error types for better feedback.  
+    } catch (error) {    
         return res.status(401).json({ message: 'Invalid token or unauthorized.' });  
     }  
 };  

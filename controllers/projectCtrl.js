@@ -3,6 +3,7 @@ const router = express.Router();
 const Project = require('../models/project');
 const User = require("../models/userModel");
 const { assign } = require('nodemailer/lib/shared');
+const { pagination } = require('../utility/pagenation');
 
 // Create a new project  
 const newProject =  async (req, res) => {  
@@ -63,14 +64,14 @@ const newProject =  async (req, res) => {
 
 const getAllProject = async (req, res) => {  
   try {  
-    const { page = 1, limit = 3 } = req.query;  
-    const projects = await Project.find()  
-      .populate('createdBy', 'fullname email')  
-      .skip((page - 1) * limit)  
-      .limit(limit);  
+
+    const{page, limit,skip}= pagination(req)
+      
+    const projects = await Project.find().limit(limit).skip(skip).sort({created_at: -1})  
+      .populate('createdBy', 'fullname email')    
 
     const totalProjects = await Project.countDocuments();  
-    return res.status(200).json({ total: totalProjects, projects });  
+    return res.status(200).json({ total: totalProjects, page, projects });  
   } catch (error) {  
     console.error(error);  
     return res.status(500).json({ message: 'An error occurred while fetching projects.' });  
