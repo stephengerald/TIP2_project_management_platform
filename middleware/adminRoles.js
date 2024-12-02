@@ -13,7 +13,7 @@ module.exports = requireAdmin;
 
 //roleMiddleware
 
-const validateToken = require('./validateAuth');  
+//const validateToken = require('../middleware/validateAuth');  
 
 const requireAdminRole = async (req, res, next) => {  
     try {  

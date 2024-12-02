@@ -40,7 +40,10 @@ const newProject =  async (req, res) => {
             assignedTo: user._id 
           };
     }));
-
+        
+      if (!req.user || !req.user._id) {  
+        return res.status(401).json({ message: 'User not authenticated' });  
+    }  
     const newProject = new Project({  
           projectTitle,  
           projectType,  
@@ -58,15 +61,21 @@ const newProject =  async (req, res) => {
   }  
 };  
 
-// Get all projects  
-const getAllProject= async (req, res) => {  
+const getAllProject = async (req, res) => {  
   try {  
-    const projects = await Project.find().populate('createdBy', 'fullname email');
-    return res.status(200).json(projects);  
+    const { page = 1, limit = 3 } = req.query;  
+    const projects = await Project.find()  
+      .populate('createdBy', 'fullname email')  
+      .skip((page - 1) * limit)  
+      .limit(limit);  
+
+    const totalProjects = await Project.countDocuments();  
+    return res.status(200).json({ total: totalProjects, projects });  
   } catch (error) {  
-      return res.status(500).json({ message: error.message });  
+    console.error(error);  
+    return res.status(500).json({ message: 'An error occurred while fetching projects.' });  
   }  
-};  
+};
 
 // Get a project by ID  
  
