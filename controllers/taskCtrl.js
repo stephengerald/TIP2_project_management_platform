@@ -80,8 +80,12 @@ const createTask = async (req, res) => {
 
 const getTasks = async (req, res) => {
     try {
-        const tasks = await Task.find().populate('assigned_to', 'fullname email');
-        return res.status(200).json({ tasks });
+        const{page, limit,skip}= pagination(req)
+
+        const tasks = await Task.find().limit(limit).skip(skip).sort({created_at: -1})
+        .populate('assigned_to', 'fullname email');
+        const totalTasks = await Project.countDocuments();
+        return res.status(200).json({total: totalTasks, tasks, page });
     } catch (error) {
         console.error("Error fetching tasks:", error);
         return res.status(500).json({ message: "Internal server error", error: error.message });
