@@ -63,7 +63,8 @@ projectPlatform.use("/api", collaborationRoute);
 projectPlatform.use("/api", fileRoutes);
 projectPlatform.use("/api", forumRoutes);
 projectPlatform.use("/api", threadRoutes);
-projectPlatform.use("/api", TaskRouter)
+projectPlatform.use("/api", TaskRouter);
+projectPlatform.use("/api", CommentRoutes)
 
 // Socket.io setup 
 io.on("connection", (socket) => {
