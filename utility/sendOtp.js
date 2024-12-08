@@ -1,5 +1,3 @@
-// utils/otpUtils.js  
-
 const nodemailer = require('nodemailer');  
 const crypto = require('crypto');  
 
@@ -21,7 +19,7 @@ const sendOtp = async (user) => {
         service: 'Gmail',  
         auth: {  
             user: process.env.EMAIL,  
-            pass: process.env.EMAIL_PASSWORD, // Ensure environment variables are correct  
+            pass: process.env.EMAIL_PASSWORD, 
         },  
     });  
 

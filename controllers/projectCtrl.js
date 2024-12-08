@@ -4,63 +4,150 @@ const Project = require('../models/project');
 const User = require("../models/userModel");
 const { assign } = require('nodemailer/lib/shared');
 const { pagination } = require('../utility/pagenation');
+const { sendEmailNotification } = require('../utility/sendNotification');
 
 // Create a new project  
-const newProject =  async (req, res) => {  
-  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;
+// const newProject =  async (req, res) => {  
+//   const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;
   
-  console.log(req.body); // Log request body to verify data is received
+//   console.log(req.body); // Log request body to verify data is received
 
-  // Validate required fields
-  if (!projectTitle){
-    return res.status(400).json({message: ' Please add project Title'})
-  }
-  if(!projectType){
-    return res.status(400).json({message: ' Project type is not included'})
-  }
-  if(!projectDescription){
-    return res.status(400).json({message: ' Please add the description of this project'})
-  }
-  if(!startDate){
-    return res.status(400).json({message: ' Please add your starting date'})
-  }
-  if(!endDate){
-    return res.status(400).json({message: ' Input your Project End time target'})
-  }
-  if(!projectRoles || projectRoles.length === 0){
-    return res.status(400).json({message: ' Project Role is not included'})
-  }
-  try {  
-      const roles = await Promise.all(projectRoles.map(async (role) => { 
-          const user = await User.findOne({ email: role.assignedTo }); 
-          if (!user) { 
-            throw new Error(`User with email ${role.assignedTo} not found`); 
-          } 
-          return { 
-            role: role.role, 
-            assignedTo: user._id 
-          };
-    }));
+//   // Validate required fields
+//   if (!projectTitle){
+//     return res.status(400).json({message: ' Please add project Title'})
+//   }
+//   if(!projectType){
+//     return res.status(400).json({message: ' Project type is not included'})
+//   }
+//   if(!projectDescription){
+//     return res.status(400).json({message: ' Please add the description of this project'})
+//   }
+//   if(!startDate){
+//     return res.status(400).json({message: ' Please add your starting date'})
+//   }
+//   if(!endDate){
+//     return res.status(400).json({message: ' Input your Project End time target'})
+//   }
+//   if(!projectRoles || projectRoles.length === 0){
+//     return res.status(400).json({message: ' Project Role is not included'})
+//   }
+//   try {  
+//       const roles = await Promise.all(projectRoles.map(async (role) => { 
+//           const user = await User.findOne({ email: role.assignedTo }); 
+//           if (!user) { 
+//             throw new Error(`User with email ${role.assignedTo} not found`); 
+//           } 
+//           return { 
+//             role: role.role, 
+//             assignedTo: user._id 
+//           };
+//     }));
         
-      if (!req.user || !req.user._id) {  
-        return res.status(401).json({ message: 'User not authenticated' });  
-    }  
-    const newProject = new Project({  
-          projectTitle,  
-          projectType,  
-          projectDescription,  
-          startDate,  
-          endDate,  
-          projectRoles: roles,
-          createdBy: req.user._id  // Ensure createdBy is set to the current user
-      });  
+//       if (!req.user || !req.user._id) {  
+//         return res.status(401).json({ message: 'User not authenticated' });  
+//     }  
+//     const newProject = new Project({  
+//           projectTitle,  
+//           projectType,  
+//           projectDescription,  
+//           startDate,  
+//           endDate,  
+//           projectRoles: roles,
+//           createdBy: req.user._id  // Ensure createdBy is set to the current user
+//       });  
 
-      await newProject.save();  
-      return res.status(201).json(newProject);  
+//       await newProject.save();  
+//       return res.status(201).json(newProject);  
+//   } catch (error) {  
+//       return res.status(500).json({ message: error.message });  
+//   }  
+// };  
+
+
+
+
+
+
+
+// Create a new project  
+const newProject = async (req, res) => {  
+  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;  
+  
+  console.log(req.body); // Log request body to verify data is received  
+
+  // Validate required fields  
+  if (!projectTitle) {  
+    return res.status(400).json({ message: 'Please add project Title' });  
+  }  
+  if (!projectType) {  
+    return res.status(400).json({ message: 'Project type is not included' });  
+  }  
+  if (!projectDescription) {  
+    return res.status(400).json({ message: 'Please add the description of this project' });  
+  }  
+  if (!startDate) {  
+    return res.status(400).json({ message: 'Please add your starting date' });  
+  }  
+  if (!endDate) {  
+    return res.status(400).json({ message: 'Input your Project End time target' });  
+  }  
+  if (!projectRoles || projectRoles.length === 0) {  
+    return res.status(400).json({ message: 'Project Role is not included' });  
+  }  
+
+  try {  
+    // Prepare project roles with emails directly from the request  
+    const roles = projectRoles.map(role => ({  
+      role: role.role,  
+      assignedTo: role.assignedTo // Directly assign the email  
+    }));  
+
+    // Check if the user is authenticated  
+    if (!req.user || !req.user._id) {  
+      return res.status(401).json({ message: 'User not authenticated' });  
+    }  
+
+    // Create the new project  
+    const newProject = new Project({  
+      projectTitle,  
+      projectType,  
+      projectDescription,  
+      startDate,  
+      endDate,  
+      projectRoles: roles,  
+      createdBy: req.user._id  // Ensure createdBy is set to the current user  
+    });  
+
+    await newProject.save();  
+
+    // Send email notifications to assigned users  
+    await Promise.all(roles.map(async (role) => {  
+      await sendEmailNotification(role.assignedTo, projectTitle); // Pass email directly  
+    }));  
+
+    return res.status(201).json(newProject);  
   } catch (error) {  
-      return res.status(500).json({ message: error.message });  
+    return res.status(500).json({ message: error.message });  
   }  
 };  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const getAllProject = async (req, res) => {  
   try {  
