@@ -1,29 +1,28 @@
 const express = require("express")
-const {newProject,updateProject, deleteProject, getProjectById, searchProjects, getAllProject} = require("../controllers/projectCtrl")
+const {newProject, updateProject, deleteProject, getProjectById, searchProjects, getAllProject} = require("../controllers/projectCtrl")
 const requireAdmin = require("../middleware/adminRoles");
 const validateToken = require("../middleware/validateAuth");
 
+module.exports = (io) => {
+    const router = express.Router()
 
-const router = express.Router()
+    // to get a project by Id
+    router.get("/getProject/:id", validateToken, getProjectById);
 
+    router.get("/getAllProjects", validateToken, getAllProject,)
 
-// to get a project by Id
-router.get("/getProject/:id", validateToken, getProjectById);
+    //create a new project
+    router.post("/newProject", validateToken, requireAdmin, newProject(io));
 
-router.get("/getAllProjects", validateToken, getAllProject,)
+    //find project and update by Id
+    router.put("/updateProject/:id", validateToken, requireAdmin, updateProject(io));
 
-//create a new project
-router.post("/newProject", validateToken, requireAdmin, newProject)
+    // find project and delete by Id
+    router.delete("/deleteProject/:id", validateToken, requireAdmin, deleteProject);
 
-//find project and update by Id
-router.put("/updateProject/:id", validateToken, requireAdmin, updateProject);
+    //search to get all available project
+    router.get("/searchProject", validateToken, searchProjects)
 
-// find project and delete by Id
-router.delete("/deleteProject/:id", validateToken, requireAdmin, deleteProject);
+    return router;
+};
 
-//search to get all available project
-router.get("/searchProject", validateToken, searchProjects)
-
-
-
-module.exports = router;

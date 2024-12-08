@@ -6,7 +6,7 @@ const { assign } = require('nodemailer/lib/shared');
 const { pagination } = require('../utility/pagenation');
 
 // Create a new project  
-const newProject =  async (req, res) => {  
+const newProject = (io) => async (req, res) => {  
   const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;
   
   console.log(req.body); // Log request body to verify data is received
@@ -56,6 +56,12 @@ const newProject =  async (req, res) => {
       });  
 
       await newProject.save();  
+
+      // Emit event for new project to all assigned users
+      roles.forEach(role => { 
+        io.to(role.assignedTo).emit('newProject', newProject); 
+      });
+
       return res.status(201).json(newProject);  
   } catch (error) {  
       return res.status(500).json({ message: error.message });  
@@ -93,7 +99,7 @@ const getProjectById = async (req, res) => {
 };  
 
 // Update a project   
-const updateProject = async (req, res) => {  
+const updateProject = (io) => async (req, res) => {  
   const { id } = req.params
   const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;  
 
@@ -125,6 +131,12 @@ const updateProject = async (req, res) => {
       if (!updatedProject) {  
           return res.status(404).json({ message: 'Project not found' });  
       }  
+
+      // Emit event for project update to all assigned users
+      roles.forEach(role => { 
+        io.to(role.assignedTo).emit('updateProject', updatedProject); 
+      });
+
       return res.status(200).json(updatedProject);  
   } catch (error) {  
       return res.status(500).json({ message: error.message });  
