@@ -3,11 +3,13 @@ const validateToken = require('../middleware/validateAuth');
 const { updateTask, deleteTask, getTasks, createTask } = require('../controllers/taskCtrl');
 const requireAdmin = require('../middleware/adminRoles');
 
-const router = express.Router();
+module.exports = (io) => {
+    const router = express.Router();
 
-router.post('/createtasks', validateToken, requireAdmin, createTask);
-router.put('/updatetasks/:id', validateToken, requireAdmin, updateTask);
+router.post('/createtasks', validateToken, requireAdmin, createTask(io));
+router.put('/updatetasks/:id', validateToken, requireAdmin, updateTask(io));
 router.delete('/deletetasks/', validateToken, requireAdmin, deleteTask);
 router.get('/getAllTask',  getTasks);
 
-module.exports = router;
+    return router;
+};

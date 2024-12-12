@@ -7,71 +7,8 @@ const { pagination } = require('../utility/pagenation');
 const { sendEmailNotification } = require('../utility/sendNotification');
 
 // Create a new project  
-// const newProject =  async (req, res) => {  
-//   const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;
-  
-//   console.log(req.body); // Log request body to verify data is received
-
-//   // Validate required fields
-//   if (!projectTitle){
-//     return res.status(400).json({message: ' Please add project Title'})
-//   }
-//   if(!projectType){
-//     return res.status(400).json({message: ' Project type is not included'})
-//   }
-//   if(!projectDescription){
-//     return res.status(400).json({message: ' Please add the description of this project'})
-//   }
-//   if(!startDate){
-//     return res.status(400).json({message: ' Please add your starting date'})
-//   }
-//   if(!endDate){
-//     return res.status(400).json({message: ' Input your Project End time target'})
-//   }
-//   if(!projectRoles || projectRoles.length === 0){
-//     return res.status(400).json({message: ' Project Role is not included'})
-//   }
-//   try {  
-//       const roles = await Promise.all(projectRoles.map(async (role) => { 
-//           const user = await User.findOne({ email: role.assignedTo }); 
-//           if (!user) { 
-//             throw new Error(`User with email ${role.assignedTo} not found`); 
-//           } 
-//           return { 
-//             role: role.role, 
-//             assignedTo: user._id 
-//           };
-//     }));
-        
-//       if (!req.user || !req.user._id) {  
-//         return res.status(401).json({ message: 'User not authenticated' });  
-//     }  
-//     const newProject = new Project({  
-//           projectTitle,  
-//           projectType,  
-//           projectDescription,  
-//           startDate,  
-//           endDate,  
-//           projectRoles: roles,
-//           createdBy: req.user._id  // Ensure createdBy is set to the current user
-//       });  
-
-//       await newProject.save();  
-//       return res.status(201).json(newProject);  
-//   } catch (error) {  
-//       return res.status(500).json({ message: error.message });  
-//   }  
-// };  
-
-
-
-
-
-
-
-// Create a new project  
-const newProject = async (req, res) => {  
-  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;  
+const newProject = (io) => async (req, res) => {  
+  const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;
   
   console.log(req.body); // Log request body to verify data is received  
 
@@ -118,14 +55,14 @@ const newProject = async (req, res) => {
       createdBy: req.user._id  // Ensure createdBy is set to the current user  
     });  
 
-    await newProject.save();  
+      await newProject.save();  
 
-    // Send email notifications to assigned users  
-    await Promise.all(roles.map(async (role) => {  
-      await sendEmailNotification(role.assignedTo, projectTitle); // Pass email directly  
-    }));  
+      // Emit event for new project to all assigned users
+      roles.forEach(role => { 
+        io.to(role.assignedTo).emit('newProject', newProject); 
+      });
 
-    return res.status(201).json(newProject);  
+      return res.status(201).json(newProject);  
   } catch (error) {  
     return res.status(500).json({ message: error.message });  
   }  
@@ -180,7 +117,7 @@ const getProjectById = async (req, res) => {
 };  
 
 // Update a project   
-const updateProject = async (req, res) => {  
+const updateProject = (io) => async (req, res) => {  
   const { id } = req.params
   const { projectTitle, projectType, projectDescription, startDate, endDate, projectRoles } = req.body;  
 
@@ -212,6 +149,12 @@ const updateProject = async (req, res) => {
       if (!updatedProject) {  
           return res.status(404).json({ message: 'Project not found' });  
       }  
+
+      // Emit event for project update to all assigned users
+      roles.forEach(role => { 
+        io.to(role.assignedTo).emit('updateProject', updatedProject); 
+      });
+
       return res.status(200).json(updatedProject);  
   } catch (error) {  
       return res.status(500).json({ message: error.message });  
