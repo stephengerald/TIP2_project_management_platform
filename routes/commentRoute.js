@@ -10,10 +10,10 @@ const router = express.Router()
 // Create a comment for a specific task 
 router.post('/createcomments', validateToken, createComment);
 // Get comments for a task 
-router.get('/getcomments', getComments);
+router.get('/getcomments', validateToken, getComments);
 // Route: updatecomments/
-router.put('/updatecomment/:id', updateComment);
+router.put('/updatecomment/:id', validateToken, updateComment);
 // Route: deletecomments
-router.delete('/deletecomment/:id', deleteComment);
+router.delete('/deletecomment/:id', validateToken, deleteComment);
 
 module.exports = router

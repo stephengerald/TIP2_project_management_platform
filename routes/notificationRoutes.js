@@ -5,8 +5,8 @@ const { createNotification, getNotifications, markNotificationAsRead } = require
 module.exports = (io) => {
     const router = express.Router();
 
-    router.post("/notification", validateToken, createNotification);
-    router.get("/getnotification/userId", validateToken, getNotifications);
+    router.post("/notification", validateToken, createNotification(io));
+    router.get("/getnotification/:userId", validateToken, getNotifications);
     router.put("/marknotifications/:notificationId/read", validateToken, markNotificationAsRead);
 
     return router;
