@@ -148,7 +148,8 @@ const updateUser = async (req, res) => {
 // Get all users
 const getAllUsers = async (req, res) => {
     try {
-        const user = await User.find().select('-password'); // Exclude password field
+        const{page, limit,skip} = pagination(req)
+        const user = await User.find().select('-password').limit(limit).skip(skip).sort({created_at: -1}); // Exclude password field
         console.log(`Users found: ${user.length}`);
         return res.status(200).json({
             message: "successful",
