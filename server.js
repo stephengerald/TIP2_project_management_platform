@@ -30,6 +30,7 @@ const TaskRouter = require('./routes/taskRoute')(io);
 const CommentRoutes = require("./routes/commentRoute");
 const notificationRoutes = require("./routes/notificationRoutes")(io);
 const messageRoutes = require("./routes/messageRoutes")(io);
+const timeTrackRoutes = require("./routes/timeTrack")
 
 /*
 const corsOptions = {
@@ -61,6 +62,7 @@ projectPlatform.use("/api", TaskRouter);
 projectPlatform.use("/api", CommentRoutes);
 projectPlatform.use("/api", messageRoutes);
 projectPlatform.use("/api", notificationRoutes);
+projectPlatform.use("/api", timeTrackRoutes);
 
 // Socket.io setup 
 io.on("connection", (socket) => {

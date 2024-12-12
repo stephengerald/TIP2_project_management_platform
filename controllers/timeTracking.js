@@ -6,20 +6,30 @@ const Task = require("../models/Task");
 const startTimeTracking = async (req, res) => {  
     const { id } = req.params;  
 
-    // Validate the ID format  
+      
+    console.log("Received task ID:", id);  
+
+    // Validate ID format  
     if (!mongoose.Types.ObjectId.isValid(id)) {  
+        console.error("Invalid task ID format:", id);  
         return res.status(400).json({ message: "Invalid task ID format." });  
     }  
 
     try {  
         const task = await Task.findById(id);  
+        
+        // Log found task 
+        console.log("Found task:", task);  
+
         if (!task) {  
+            console.error("Task not found with ID:", id);  
             return res.status(404).json({ message: "Task not found." });  
         }  
 
-        // Check if there is an ongoing time tracking entry  
+        // Check for ongoing time tracking  
         const ongoingTracking = task.time_tracking.find(entry => !entry.end_time);  
         if (ongoingTracking) {  
+            console.error("Time tracking is already in progress for task ID:", id);  
             return res.status(400).json({ message: "Time tracking is already in progress." });  
         }  
 
@@ -28,13 +38,15 @@ const startTimeTracking = async (req, res) => {
         task.time_tracking.push({ start_time: startTime });  
         await task.save();  
 
+        console.log("Time tracking started for task ID:", task._id);  
+
         return res.status(200).json({  
             message: "Time tracking started.",  
             taskId: task._id,  
-            trackingEntry: task.time_tracking[task.time_tracking.length - 1] // Return the last tracking entry  
+            trackingEntry: task.time_tracking[task.time_tracking.length - 1]  
         });  
     } catch (error) {  
-        console.error(error);  
+        console.error("Error in startTimeTracking:", error);  
         return res.status(500).json({ message: "Internal server error." });  
     }  
 };
