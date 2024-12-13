@@ -12,7 +12,8 @@ const cookieParser = require("cookie-parser");
 const transporter = require('../configuration/smtpConfig');    
 const generateAccessToken = require("../utility/generateAccessToken");
 const generateRefreshToken = require("../utility/generateRefreshToken");
-const { generateOtp, sendOtp } = require("../utility/sendOtp")
+const { generateOtp, sendOtp } = require("../utility/sendOtp");
+const { pagination } = require("../utility/pagenation");
 
 const welcome = async(req, res) => {
     try {
@@ -149,7 +150,7 @@ const updateUser = async (req, res) => {
 const getAllUsers = async (req, res) => {
     try {
         const{page, limit,skip} = pagination(req)
-        const user = await User.find().select('-password').limit(limit).skip(skip).sort({created_at: -1}); // Exclude password field
+        const user = await User.find().select('-password').limit(limit).skip(skip).sort({createdAt: -1}); // Exclude password field
         console.log(`Users found: ${user.length}`);
         return res.status(200).json({
             message: "successful",
