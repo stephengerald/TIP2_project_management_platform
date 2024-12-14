@@ -68,24 +68,6 @@ const newProject = (io) => async (req, res) => {
   }  
 };  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const getAllProject = async (req, res) => {  
   try {  
 
@@ -103,7 +85,6 @@ const getAllProject = async (req, res) => {
 };
 
 // Get a project by ID  
- 
 const getProjectById = async (req, res) => {  
   try {  
       const project = await Project.findById(req.params.id);  

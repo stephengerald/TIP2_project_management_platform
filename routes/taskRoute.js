@@ -9,7 +9,7 @@ module.exports = (io) => {
 router.post('/createtasks', validateToken, requireAdmin, createTask(io));
 router.put('/updatetasks/:id', validateToken, requireAdmin, updateTask(io));
 router.delete('/deletetasks/', validateToken, requireAdmin, deleteTask);
-router.get('/getAllTask',  getTasks);
+router.get('/getAllTask', getTasks);
 
     return router;
 };
