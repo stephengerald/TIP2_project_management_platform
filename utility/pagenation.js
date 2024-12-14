@@ -3,7 +3,7 @@ const pagination = (req)=>{
 
     const page = req.query.page || 1
 
-    const limit = req.query.limit || 2
+    const limit = req.query.limit || 5
 
     const skip = limit * (page - 1)
 

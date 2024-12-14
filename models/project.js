@@ -16,10 +16,10 @@ const projectRoleSchema = new mongoose.Schema({
         required: true
     },
     assignedTo: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
-    }
+        type: String, 
+        required: true, 
+        trim: true 
+    },
 });
 
 const projectSchema = new mongoose.Schema({
