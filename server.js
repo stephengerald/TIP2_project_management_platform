@@ -51,6 +51,19 @@ const PORT = process.env.PORT || 9000;
 // ConnectTo DATABASE
 connectToDatabase();
 
+// Start server
+server.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
+});
+
+projectPlatform.get("/",(req, res) => {
+    try {
+        return res.status(200).json({ message: "Welcome to project management platform!" });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+});  
+
 // Route middleware
 projectPlatform.use("/api", userRouter);
 projectPlatform.use("/api", projectRoute);
@@ -94,7 +107,3 @@ projectPlatform.use((req, res) => {
 });
 
 
-// Start server
-server.listen(PORT, () => {
-    console.log(`Server is running on ${PORT}`);
-});
