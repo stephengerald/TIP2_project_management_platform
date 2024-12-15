@@ -48,8 +48,15 @@ projectPlatform.use(cookieParser());
 
 const PORT = process.env.PORT || 9000;
 
+// Start server
+server.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
+});
+
 // ConnectTo DATABASE
 connectToDatabase();
+
+
 
 // Route middleware
 projectPlatform.use("/api", userRouter);

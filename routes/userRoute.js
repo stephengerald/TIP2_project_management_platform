@@ -1,5 +1,5 @@
 const express = require("express");
-const { logout, updateUser, welcome, registerUser, loginUser, deleteUser, verifyOtp, getAllUsers, getUserById, resendOtp } = require("../controllers/userCtrl");
+const { logout, updateUser, registerUser, welcome, loginUser, deleteUser, verifyOtp, getAllUsers, getUserById, resendOtp } = require("../controllers/userCtrl");
 const { validateLogin, validateRegistration, validEmail, 
     //validateRegistration 
     } = require("../middleware/validations");
@@ -10,6 +10,7 @@ const router = express.Router();
 
 //Welcome
 router.get("/", welcome);
+
 // login router
 router.post("/login", validateLogin, loginUser);
 

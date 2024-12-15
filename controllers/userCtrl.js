@@ -258,9 +258,9 @@ module.exports = {
     verifyOtp,
     resendOtp,
     updateUser,
+    welcome,
     loginUser,
     deleteUser,
-    welcome,
     logout,
     getAllUsers,
     getUserById
