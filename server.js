@@ -88,13 +88,16 @@ io.on("connection", (socket) => {
     });
 });
 
+
+// Start server
+server.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
+});
+
+
 // Handle 404
 projectPlatform.use((req, res) => {
     return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
 
 
-// Start server
-server.listen(PORT, () => {
-    console.log(`Server is running on ${PORT}`);
-});
