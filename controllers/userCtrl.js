@@ -15,6 +15,14 @@ const generateRefreshToken = require("../utility/generateRefreshToken");
 const { generateOtp, sendOtp } = require("../utility/sendOtp");
 const { pagination } = require("../utility/pagenation");
 
+const welcome = async(req, res) => {
+    try {
+        return res.status(200).json({ message: "Welcome to ProjectHive" });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};  
+
 // Register user  
 const registerUser = async (req, res) => {  
     const { fullname, email, password, role } = req.body;  
